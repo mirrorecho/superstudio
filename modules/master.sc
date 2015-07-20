@@ -3,7 +3,6 @@
 ~ss.loadModule(
     "master", // module name
     [], // namespace hierarchy for module
-    ["core","bus","synth"], // module dependencies
     "Mastering: Fx Busses and Synths", // friendly name
     { arg ss, module; // module function...
 

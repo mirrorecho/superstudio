@@ -3,9 +3,8 @@
 ~ss.loadModule(
     "midi", // module name
     ["midi"], // namespace hierarchy for module
-    ["core","bus","synth","master"], // module dependencies
     "Basic MIDI Controller Utility", // friendly name
-    { arg ss, module; // m
+    { arg ss, module; // module function...
 
         MIDIIn.connectAll;
 

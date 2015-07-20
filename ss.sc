@@ -7,7 +7,7 @@
 ~ss.modules=[];
 
 
-~ss.loadModule = { arg ss, name, namespace, dependencies, title, function;
+~ss.loadModule = { arg ss, name, namespace, title, function;
     var moduleNamespace = ss;
     namespace.do { arg namespaceLevel;
         if (moduleNamespace[namespaceLevel.asSymbol] == nil, {

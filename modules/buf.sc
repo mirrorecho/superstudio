@@ -1,9 +1,7 @@
 (
-
 ~ss.loadModule(
-    "core", // module name
+    "buf", // module name
     ["buf"], // namespace hierarchy for module
-    ["core","bus","synth","master"], // module dependencies
     "Buffer utilities", // friendly name
     { arg ss, module; // module function...
 
@@ -34,3 +32,4 @@
 
 
 )
+

@@ -3,7 +3,6 @@
 ~ss.loadModule(
     "synth.library", // module name
     ["synth"], // namespace hierarchy for module
-    ["core","bus","synth","master"], // module dependencies
     "Simple Synth Library", // friendly name
     { arg ss, module; // module function...
 
