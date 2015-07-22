@@ -1,5 +1,5 @@
 (
-~ss.loadModule(
+~ss.makeModule(
     "buf", // module name
     ["buf"], // namespace hierarchy for module
     "Buffer utilities", // friendly name
@@ -18,10 +18,11 @@
             ss.postPretty(postMsgs);
         };
 
-        SynthDef("ss.buf.play", {arg buffer, amp=1.0;
+        SynthDef("ss.buf.play", {arg buffer, amp=1.0, rate=1.0;
             var sig = PlayBuf.ar(2,
                 bufnum:buffer,
-                doneAction:2
+                rate:BufRateScale.kr(buffer)*rate,
+                doneAction:2,
                 );
             sig = sig * amp;
             Out.ar(ss.bus.master, sig);

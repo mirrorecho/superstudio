@@ -1,6 +1,6 @@
 
 (
-~ss.loadModule(
+~ss.makeModule(
     "midi", // module name
     ["midi"], // namespace hierarchy for module
     "Basic MIDI Controller Utility", // friendly name

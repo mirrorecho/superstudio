@@ -1,6 +1,6 @@
 (
 
-~ss.loadModule(
+~ss.makeModule(
     "core", // module name
     [], // namespace hierarchy for module
     "Core properties and functions", // friendly name

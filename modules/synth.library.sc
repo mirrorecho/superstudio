@@ -1,6 +1,6 @@
 (
 
-~ss.loadModule(
+~ss.makeModule(
     "synth.library", // module name
     ["synth"], // namespace hierarchy for module
     "Simple Synth Library", // friendly name
@@ -18,7 +18,6 @@
             sig2 = RLPF.ar(sig2, LFNoise1.kr(8!2).range(freq*2, 9900), 0.2);
             env2 = EnvGen.kr(Env.adsr(0.8, 0.2, 0.4, 3), gate:gate, doneAction:2);
             sig2 = sig2 * env2;
-
 
             sig1 = sig1!2 + sig2;
 

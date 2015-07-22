@@ -1,6 +1,6 @@
 (
 
-~ss.loadModule(
+~ss.makeModule(
     "master", // module name
     [], // namespace hierarchy for module
     "Mastering: Fx Busses and Synths", // friendly name
@@ -11,8 +11,11 @@
             a Function for defining then synth defs, so that its receivier is a Routine, which can wait for
             for the defs to load before calling them...
             */
-            ss.bus.master = Bus.audio(s,2);
-            ss.bus.masterOut = Bus.audio(s,2); // master out (without routing through master fx)
+            if (ss.bus.master == nil, { ss.bus.master = Bus.audio(s,2); });
+            
+            // master out (without routing through master fx)
+            if (ss.bus.masterOut == nil, { ss.bus.masterOut = Bus.audio(s,2); }); 
+
             s.sync;
 
             ss.postPretty([

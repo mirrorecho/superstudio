@@ -1,13 +1,17 @@
-// TO DO.. PREVENT BUSSES FROM BEING REPEATEDLY RE-ALLOCATED AND USED UP
+/*
+TO DO!
+ - tempo clock module
+ - Pbind factory module?
+*/
 
 (
 
 ~ss = Environment.make;
 ~ss.know = true;
 ~ss.modules=[];
+~ss.path = "".resolveRelative; // funny, doesn't work if this is current file open in sublime text
 
-
-~ss.loadModule = { arg ss, name, namespace, title, function;
+~ss.makeModule = { arg ss, name, namespace, title, function;
     var moduleNamespace = ss;
     namespace.do { arg namespaceLevel;
         if (moduleNamespace[namespaceLevel.asSymbol] == nil, {
@@ -19,26 +23,35 @@
         moduleNamespace = moduleNamespace[namespaceLevel.asSymbol];
     };
 
-    {
-        function.value(ss:ss, module:moduleNamespace);
-        s.sync;
-    }.fork;
+    function.value(ss:ss, module:moduleNamespace);
 
     ss.modules = ss.modules ++ [name];
-    ("Loaded SuperStudio Module:" + title).postln;
+    
 
 };
 
+~ss.load = { arg ss, modules=["core"], callback={};
+    {
+        s.sync;
+        modules.do { arg module;
+            (~ss.path ++ "/modules/" ++ module ++ ".sc").loadPaths;
+            s.sync;
+            ("Loaded Super Studio Module: '" ++ module ++ "'").postln;
+        };
+        callback.value;
+    }.fork;
+};
 
+~ss.start = {arg ss, callback={};
+    s.freeAll;
+    Server.all.do(Buffer.freeAll);
+    s.newAllocators; // new allocators (numbers) for busses, buffers, etc.
+    ss.load(["core"], callback);
+};
 
-~ss.load = { arg ss, 
-    ssPath = "/home/randall/Code/mirrorecho/superstudio", // how to avoid hard-coding this?
-    modules=["core","synth","bus","master","midi","synth.library","buf"];
-
-    modules.do { arg module;
-        (ssPath ++ "/modules/" ++ module ++ ".sc").loadPaths;
-    };
-
+~ss.loadCommon = { arg ss, 
+    callback = {};
+    ~ss.load(["bus","master","midi","synth.library","buf"], callback);
 };
 
 )

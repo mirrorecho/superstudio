@@ -2,7 +2,7 @@
 
 (
 
-~ss.loadModule(
+~ss.makeModule(
     "bus", // module name
     ["bus"], // namespace hierarchy for module
     "Audio/control busses", // friendly name
