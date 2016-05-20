@@ -6,7 +6,8 @@
     "Simple Synth Library", // friendly name
     { arg ss, module; // module function...
 
-        SynthDef("ss.spacey", { arg freq=440, amp=0.1, gate=1;
+        SynthDef("ss.spacey", { 
+            arg freq=440, amp=0.1, gate=1;
             var sig1, sig2, env1, env2;
             sig1 = SinOsc.ar(freq:freq, mul:amp/2);
             sig1 = sig1 + SinOsc.ar(freq:freq*2, mul:amp/3);
