@@ -4,8 +4,8 @@ TO DO!
  - Pbind factory module?
 */
 
-(
 
+(
 ~ss = Environment.make;
 ~ss.know = true;
 ~ss.modules=[];
@@ -26,7 +26,7 @@ TO DO!
     function.value(ss:ss, module:moduleNamespace);
 
     ss.modules = ss.modules ++ [name];
-    
+
 
 };
 
@@ -49,9 +49,8 @@ TO DO!
     ss.load(["core"], callback);
 };
 
-~ss.loadCommon = { arg ss, 
-    callback = {};
-    ~ss.load(["bus","master","midi","synth.library","buf"], callback);
+~ss.loadCommon = { arg ss, callback = {};
+    ~ss.load(["bus","master","synth.library","buf"], callback);
 };
 
 )
