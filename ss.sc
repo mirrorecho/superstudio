@@ -1,7 +1,11 @@
 /*
 TO DO!
+ - make sure startup easy... with examples
+ - more cool synths
  - tempo clock module
  - Pbind factory module?
+ - KISS
+ - module to work with Max/MSP easily
 */
 
 (
@@ -26,7 +30,7 @@ TO DO!
     function.value(ss:ss, module:moduleNamespace);
 
     ss.modules = ss.modules ++ [name];
-    
+
 
 };
 
@@ -49,7 +53,7 @@ TO DO!
     ss.load(["core"], callback);
 };
 
-~ss.loadCommon = { arg ss, 
+~ss.loadCommon = { arg ss,
     callback = {};
     ~ss.load(["bus","master","midi","synth.library","buf"], callback);
 };
