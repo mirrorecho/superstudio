@@ -8,8 +8,8 @@ TO DO!
  - module to work with Max/MSP easily
 */
 
-(
 
+(
 ~ss = Environment.make;
 ~ss.know = true;
 ~ss.modules=[];
@@ -46,16 +46,20 @@ TO DO!
     }.fork;
 };
 
-~ss.start = {arg ss, callback={};
-    s.freeAll;
+~ss.start = {arg ss;
+	// thought... s.reboot or s.freeAll better?
+	s.reboot;
+	// s.freeAll;
     Server.all.do(Buffer.freeAll);
     s.newAllocators; // new allocators (numbers) for busses, buffers, etc.
-    ss.load(["core"], callback);
+    ss.load(["core"]);
+	post("YOYOYOYOYOYO");
 };
 
-~ss.loadCommon = { arg ss,
-    callback = {};
-    ~ss.load(["bus","master","midi","synth.library","buf"], callback);
+~ss.loadCommon = { arg ss;
+	~ss.load(["bus","master","synth.library","buf"]); // note: removed "midi" from list
 };
+
+~ss.start;
 
 )
