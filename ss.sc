@@ -1,19 +1,28 @@
 /*
 TO DO!
- - make sure startup easy... with examples
  - more cool synths
+ - - - pop sound
+ - - - ghost sound
+ - - - simple drums
+ - - - swish, swell
+ - - - swish effects
+ - - - drone maker
+ - - -
  - tempo clock module
- - Pbind factory module?
+ - Pbind/Proxy factory module?
  - KISS
  - module to work with Max/MSP easily
 */
 
 
 (
+var initialized = false;
+if ( currentEnvironment.includesKey(\ss) , {initialized = ~ss.initialized;});
 ~ss = Environment.make;
 ~ss.know = true;
 ~ss.modules=[];
 ~ss.path = "".resolveRelative; // funny, doesn't work if this is current file open in sublime text
+~ss.initialized = initialized; // set to true once ~ss first initialized (since some setup changes if the following code block called 2nd time)
 
 ~ss.makeModule = { arg ss, name, namespace, title, function;
     var moduleNamespace = ss;
@@ -38,26 +47,29 @@ TO DO!
     {
         s.sync;
         modules.do { arg module;
-            (~ss.path ++ "/modules/" ++ module ++ ".sc").loadPaths;
+            (ss.path ++ "/modules/" ++ module ++ ".sc").loadPaths;
             s.sync;
-            ("Loaded Super Studio Module: '" ++ module ++ "'").postln;
+			("Loaded Super Studio Module: '" ++ module ++ "'").postln;
         };
         callback.value;
     }.fork;
 };
 
-~ss.start = {arg ss;
-	// thought... s.reboot or s.freeAll better?
+~ss.start = {arg ss, callback={};
+	f = {
+		s.freeAll;
+		Server.all.do(Buffer.freeAll); // necessary even with reboot?
+		s.newAllocators; // new allocators (numbers) for busses, buffers, etc.
+		ss.load(["core"], callback);
+		ss.initialized = true;
+	};
+	postln(ss.initialized);
+	if ( ss.initialized != true, {ServerBoot.add(f, \default);} );
 	s.reboot;
-	// s.freeAll;
-    Server.all.do(Buffer.freeAll);
-    s.newAllocators; // new allocators (numbers) for busses, buffers, etc.
-    ss.load(["core"]);
-	post("YOYOYOYOYOYO");
 };
 
-~ss.loadCommon = { arg ss;
-	~ss.load(["bus","master","synth.library","buf"]); // note: removed "midi" from list
+~ss.loadCommon = { arg ss, callback={};
+	~ss.load(["bus","master","synth.library","buf"], callback); // note: removed "midi" from list
 };
 
 ~ss.start;
