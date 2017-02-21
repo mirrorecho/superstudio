@@ -1,14 +1,12 @@
 /*
 TO DO!
  - more cool synths
- - - - pop sound
- - - - ghost sound
- - - - simple drums
+ - - - drone maker
  - - - swish, swell
  - - - swish effects
- - - - drone maker
- - - -
- - tempo clock module
+ - - - ghost sound
+ - - - simple drums
+ - tempo clock module?
  - Pbind/Proxy factory module?
  - KISS
  - module to work with Max/MSP easily
