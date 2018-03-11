@@ -18,13 +18,27 @@
             ss.postPretty(postMsgs);
         };
 
-        SynthDef("ss.buf.play", {arg buffer, amp=1.0, rate=1.0;
+
+        SynthDef("ss.buf.play", {arg buffer, amp=1.0, rate=1.0, start=0;
             var sig = PlayBuf.ar(2,
                 bufnum:buffer,
                 rate:BufRateScale.kr(buffer)*rate,
-                doneAction:2,
+				startPos:BufSampleRate.kr(buffer) * start,
+				doneAction:2,
                 );
             sig = sig * amp;
+            Out.ar(ss.bus.master, sig);
+        }).add;
+
+        SynthDef("ss.buf.perc", {arg buffer, amp=1.0, rate=1.0, start=0, attackTime=0.01, releaseTime=1, curve= -4;
+			var sig = PlayBuf.ar(2,
+                bufnum:buffer,
+				rate:BufRateScale.kr(buffer)*rate,
+				startPos:BufSampleRate.kr(buffer) * start,
+                doneAction:2,
+                );
+			var env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
+			sig = sig * amp * EnvGen.ar(env, doneAction: 2);
             Out.ar(ss.bus.master, sig);
         }).add;
 
@@ -63,6 +77,10 @@
 			mySynth;
 		};
 
+		module.list = {
+
+		};
+
 		module.play = { arg env, libraryName, bufferName, args=[];
 			module.makeSynth("ss.buf.play", libraryName, bufferName, args);
 		};
@@ -71,9 +89,14 @@
 			module.makeSynth("ss.buf.drone", libraryName, bufferName, args);
 		};
 
+		module.perc = { arg env, libraryName, bufferName, args=[];
+			module.makeSynth("ss.buf.perc", libraryName, bufferName, args);
+		};
+
     }
 );
 
+// BufFrames
 
 )
 

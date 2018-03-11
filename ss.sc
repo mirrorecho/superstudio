@@ -12,7 +12,6 @@ TO DO!
  - module to work with Max/MSP easily
 */
 
-
 (
 var initialized = false;
 if ( currentEnvironment.includesKey(\ss) , {initialized = ~ss.initialized;});
@@ -20,9 +19,10 @@ if ( currentEnvironment.includesKey(\ss) , {initialized = ~ss.initialized;});
 ~ss.know = true;
 ~ss.modules=[];
 ~ss.path = "".resolveRelative; // funny, doesn't work if this is current file open in sublime text
+~ss.projectPath = ~ss.path; // will typically replace with project specific path
 ~ss.initialized = initialized; // set to true once ~ss first initialized (since some setup changes if the following code block called 2nd time)
 
-~ss.makeModule = { arg ss, name, namespace, title, function;
+~ss.makeModule = { arg ss, name, namespace=[], title="", function={arg ss, module; };
     var moduleNamespace = ss;
     namespace.do { arg namespaceLevel;
         if (moduleNamespace[namespaceLevel.asSymbol] == nil, {
