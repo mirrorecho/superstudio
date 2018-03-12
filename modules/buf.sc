@@ -9,7 +9,7 @@
 
         module.loadLibrary = {arg env, library;
             var postMsgs = [];
-            module[library.asSymbol] = Environment.make;
+            module[library.asSymbol] = Environment.make; // TO DO... why not use makeModule here??
             SoundFile.collectIntoBuffers(module.libraryPath ++ library ++ "/*").do { arg buffer;
                 var bufferName = buffer.path.basename.splitext[0];
                 module[library.asSymbol][bufferName.asSymbol] = buffer;
