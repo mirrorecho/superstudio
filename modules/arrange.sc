@@ -46,16 +46,16 @@
 		if (comboEvent.bookendRests.maxItem > 0,
 			{
 				var mySeq = [];
-				comboEvent.bookendRests[0] * comboEvent.beatTime.postln;
+				// comboEvent.bookendRests[0] * comboEvent.beatTime.postln;
 				if (comboEvent.bookendRests[0] > 0,
 					{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([comboEvent.bookendRests[0] * comboEvent.beatTime])]))}, );
 				mySeq = mySeq.add(myBind);
 				if (comboEvent.bookendRests[1] > 0,
 					{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([comboEvent.bookendRests[1] * comboEvent.beatTime])]))}, );
-				mySeq.postln;
+				// mySeq.postln;
 				Pseq(mySeq);
 			},
-			myBind
+			{ myBind },
 		);
 	};
 

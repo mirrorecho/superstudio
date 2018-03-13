@@ -53,6 +53,18 @@ if ( currentEnvironment.includesKey(\ss) , {initialized = ~ss.initialized;});
     }.fork;
 };
 
+~ss.loadLocal = { arg ss, modules=[], callback={};
+    {
+        s.sync;
+        modules.do { arg module;
+            (ss.projectPath ++ module ++ ".sc").loadPaths;
+            s.sync;
+			("Loaded Local Project Module: '" ++ module ++ "'").postln;
+        };
+        callback.value;
+    }.fork;
+};
+
 ~ss.start = {arg ss, callback={};
 	f = {
 		s.freeAll;
