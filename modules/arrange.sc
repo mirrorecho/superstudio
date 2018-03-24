@@ -1,106 +1,124 @@
-// TO DO: an equivalent for PmonoArtic
-// .... in particular, being able to swith between the two... (i.e. wiith same original settings)
-// TO DO: arrange should be work-specific (namespaced to work... not general to ss)
-// TO DO: consider using PatternConductor...
-// TO DO... also consider using built-in TempoClock instead of my own custom bpm-based settings
-
-// TO DO: tools for rates/ etc. for buffers
+// NAMING CONVENTION NOTE:
+// settings are passed as events, with a naming: eMyDescription
+// e.g.: eInit, eSeqValues, etc.
 
 (
 ~ss.makeModule("arrange", ["arrange"], "Arrangement Tools with Patterns", { arg ss, module;
 	module.bpm = 60;
-	module.defaultSettings = (eventMax:inf, repeats:1, rhythm:[1], notes:[0], bookendRests:[0,0]);
-
+	module.eDefault = (eventMax:inf, repeats:1, rhythm:[1], notes:[0], bookendRests:[0,0]);
 
 	// ----------------------------------------------------------------------------------------------
-	module.makeBind = {arg env, name, valuesEvent=();
-		// combines values in iniital event with the new values to be used for the Pbindf:
-		// TO DO MAYBE... only pull in the values from the parent event that make sense???
-		var comboEvent = (bpm:module.bpm).putAll(env[name.asSymbol].settings).putAll(valuesEvent);
-		var sequenceLength, myBind;
+	module.makeSeqBook = {arg env, innerItems, sequenceSettings;
+		var mySeq = [];
+		var bookSettings = module.settingsWith(sequenceSettings);
+		if (bookSettings.bookendRests[0] > 0,
+			{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([bookSettings.bookendRests[0] * bookSettings.beatTime])]))}, );
+		mySeq = mySeq.addAll(innerItems);
+		if (bookSettings.bookendRests[1] > 0,
+			{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([bookSettings.bookendRests[1] * bookSettings.beatTime])]))}, );
+		Pseq(mySeq);
+	};
 
-		comboEvent.beatTime = (1/comboEvent.bpm) * 60;
-
-		// if a note value is passed, then replace array of notes
-		if (comboEvent.includesKey('note') && comboEvent.note.isNil.not,
-			{comboEvent.notes = [comboEvent.note];});
-
-		// if a dur value is passed, then replace the rhythm array
-		if (comboEvent.includesKey('dur') && comboEvent.dur.isNil.not,
-			{comboEvent.rhythm = [comboEvent.dur * comboEvent.bpm / 60]};
+	module.makeSeq = {arg env, namesList, valuesEvent=();
+		var sequenceItemSettings = valuesEvent.putAll((bookendRests:[0,0] ));
+		var myBindList = namesList.collect { arg name; env[name.asSymbol].bind(sequenceItemSettings);  };
+		if (valuesEvent.bookendRests.maxItem > 0,
+			{ module.makeSeqBook(myBindList, valuesEvent); },
+			{ Pseq(myBindList); },
 		);
+	};
 
-		sequenceLength = [
-			comboEvent.eventMax, [
-				comboEvent.rhythm.size * comboEvent.repeats, comboEvent.notes.size * comboEvent.repeats,
+	module.settingsWith = {arg env, valuesEvent=(), initEvent=module.eDefault;
+		var settingsEvent = (bpm:env.bpm).putAll(initEvent).putAll(valuesEvent);
+
+		settingsEvent.sequenceLength = [
+			settingsEvent.eventMax, [
+				settingsEvent.rhythm.size * settingsEvent.repeats, settingsEvent.notes.size * settingsEvent.repeats,
 			].maxItem
 		].minItem;
 
-		// now set the note value to use as a Pser loop through the notes array
-		comboEvent.note = Pser(comboEvent.notes, sequenceLength);
 
-		// now set the dur value to use as a Pser loop through the rhythm array
-		comboEvent.dur = Pser(comboEvent.rhythm, sequenceLength) * comboEvent.beatTime;
+		settingsEvent.rhythm_length = {arg mySettings;
+			sum( mySettings.sequenceLength.collect{ |i| mySettings.rhythm[i % mySettings.rhythm.size]; } );
+		};
 
-		myBind = Pbindf(env.pattern, *comboEvent.asPairs);
-		if (comboEvent.bookendRests.maxItem > 0,
-			{
-				var mySeq = [];
-				// comboEvent.bookendRests[0] * comboEvent.beatTime.postln;
-				if (comboEvent.bookendRests[0] > 0,
-					{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([comboEvent.bookendRests[0] * comboEvent.beatTime])]))}, );
-				mySeq = mySeq.add(myBind);
-				if (comboEvent.bookendRests[1] > 0,
-					{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([comboEvent.bookendRests[1] * comboEvent.beatTime])]))}, );
-				// mySeq.postln;
-				Pseq(mySeq);
-			},
-			{ myBind },
-		);
+		settingsEvent.time_length = {arg mySettings;
+			mySettings.rhythm_length * (1/mySettings.bpm) * 60;
+		};
+
+		settingsEvent.beatTime = (1/settingsEvent.bpm) * 60;
+
+		settingsEvent;
 	};
 
 	// ----------------------------------------------------------------------------------------------
-	module.makeP =  {arg env, name, initEvent=(), mono;
-
+	module.makeP =  {arg env, name, initEvent=();
 		// TO DO... able to pass in more sophisticated values for rhythm/notes as opposed to simple arrays
-
+		var myP;
 		module[name.asSymbol] = Environment.make;
-		module[name.asSymbol].know = true;
-		module[name.asSymbol].settings = ().putAll(env.defaultSettings).putAll(initEvent);
-		module[name.asSymbol].pattern = Pbind();
+		myP = module[name.asSymbol];
 
+		myP.know = true;
+		// TO DO... do we need this child event for settings?
+		myP.settings = module.settingsWith(initEvent);
 
-		module[name.asSymbol].bind = {arg env, valuesEvent=();
-			module.makeBind(name, valuesEvent);
+		myP.settingsWith = {arg env, valuesEvent=();
+			module.settingsWith(valuesEvent, myP.settings);
 		};
 
-		// Re-ADD IF USEFUL:
-/*		module[name.asSymbol].rhythm_length = {arg env;
-			sum(env.settings.rhythm);
+		// ----------------------------------------------------------------------------------------------
+		myP.makeBind = {arg env, name, valuesEvent=(), pattern;
+			// combines values in iniital event with the new values to be used for the Pbindf:
+			// TO DO MAYBE... only pull in the values from the parent event that make sense???
+			var comboEvent = myP.settingsWith(valuesEvent);
+			var myBind;
 
-		module[name.asSymbol].time_length = {arg env;
-			env.rhythm_length * (1/env.settings.bpm) * 60;};
-		};*/
+
+			// if a note value is passed, then replace array of notes
+			if (comboEvent.includesKey('note') && comboEvent.note.isNil.not,
+				{comboEvent.notes = [comboEvent.note];});
+
+			// if a dur value is passed, then replace the rhythm array
+			if (comboEvent.includesKey('dur') && comboEvent.dur.isNil.not,
+				{comboEvent.rhythm = [comboEvent.dur * comboEvent.bpm / 60]};
+			);
+
+			// now set the note value to use as a Pser loop through the notes array
+			comboEvent.note = Pser(comboEvent.notes, comboEvent.sequenceLength);
+
+			// now set the dur value to use as a Pser loop through the rhythm array
+			comboEvent.dur = Pser(comboEvent.rhythm, comboEvent.sequenceLength) * comboEvent.beatTime;
+
+			myBind = Pbindf(pattern, *comboEvent.asPairs);
+			if (comboEvent.bookendRests.maxItem > 0,
+				{
+					module.makeSeqBook(myBind, comboEvent);
+				},
+				{ myBind },
+			);
+		};
+
+
+		myP.bind = {arg env, valuesEvent=();
+			myP.makeBind(name, valuesEvent, Pbind());
+		};
+
+		myP.bindMono = {arg env, valuesEvent=();
+			myP.makeBind(name, valuesEvent, PmonoArtic());
+		};
+
+
+		myP.rhythm_length = {arg env;
+			myP.settingsWith().rhythm_length;
+		};
+
+		// DITTO WARNING AS ABOVE
+		myP.time_length = {arg env;
+			myP.settingsWith().time_length;
+		};
 
 
 	};
-
-	// ----------------------------------------------------------------------------------------------
-	// TO DO: DRY HERE: TO MUCH IS REPEATED BETWEN makeP and makePmono... DRY..!!!
-	module.makePmono =  {arg env, name, initEvent=();
-
-		module[name.asSymbol] = Environment.make;
-		module[name.asSymbol].know = true;
-		module[name.asSymbol].settings = ().putAll(env.defaultSettings).putAll(initEvent);
-		module[name.asSymbol].pattern = PmonoArtic();
-
-
-		module[name.asSymbol].bind = {arg env, valuesEvent=();
-			module.makeBind(name, valuesEvent);
-		};
-	};
-
-
 	// ----------------------------------------------------------------------------------------------
 	module.copyP =  {arg env, newName, oldName, initEvent=();
 
@@ -110,10 +128,7 @@
 
 	};
 
-	// ----------------------------------------------------------------------------------------------
-	module.makeSeq = {arg env, mySequence, valuesEvent=();
-		Pseq( mySequence.collect { arg name; env[name.asSymbol].bind(valuesEvent);  } );
-	};
+
 
 });
 
