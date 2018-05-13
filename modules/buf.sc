@@ -5,18 +5,18 @@ title: "Buffer utilities", // friendly name
 
 libraryPath: "/", // will generally be overwritten
 
-loadLibrary: {arg self, library;
-	var postMsgs = [];
-	self[library.asSymbol] = Environment.make; // TO DO... why not use makeModule here??
-	SoundFile.collectIntoBuffers(self.libraryPath ++ library ++ "/*").do { arg buffer;
+loadLibrary: {arg self, libraryName;
+	var postMsgs = [], eLibrary = ();
+	SoundFile.collectIntoBuffers(self.libraryPath ++ libraryName ++ "/*").do { arg buffer;
 		var bufferName = buffer.path.basename.splitext[0];
-		self[library.asSymbol][bufferName.asSymbol] = buffer;
-		postMsgs = postMsgs.add("Loaded buffer: ~ss.buf['" ++ library ++ "']['" ++ bufferName ++ "']");
+		eLibrary[bufferName.asSymbol] = buffer;
+		postMsgs = postMsgs.add("Loaded buffer: ~ss.buf['" ++ libraryName ++ "']['" ++ bufferName ++ "']");
 	};
+	self.makeModule(libraryName, eLibrary);
 	self.ss.postPretty(postMsgs);
 },
 
-initModule: { | self, ss |
+initModule: { | self |
 	// TO DO: auto-ability to start from end of buffer
 	SynthDef("ss.buf.play", {arg buffer, amp=1.0, rate=1.0, start=0;
 		var sig = PlayBuf.ar(2,
@@ -26,7 +26,7 @@ initModule: { | self, ss |
 			doneAction:2,
 		);
 		sig = sig * amp;
-		Out.ar(ss.bus.master, sig);
+		Out.ar(self.ss.bus.master, sig);
 	}).add;
 
 	SynthDef("ss.buf.perc", {arg buffer, amp=1.0, rate=1.0, start=0, attackTime=0.01, releaseTime=1, curve= -4;
@@ -38,7 +38,7 @@ initModule: { | self, ss |
 		);
 		var env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
 		sig = sig * amp * EnvGen.ar(env, doneAction: 2);
-		Out.ar(ss.bus.master, sig);
+		Out.ar(self.ss.bus.master, sig);
 	}).add;
 
 
@@ -55,7 +55,7 @@ initModule: { | self, ss |
 			bufnum:buffer,
 			rate:BufRateScale.kr(buffer)*rate,
 			loop:1) * EnvGen.ar(Env.circle([0,1,0], [length/(2*rate), length/(2*rate), 0]));
-		Out.ar(ss.bus.master,
+		Out.ar(self.ss.bus.master,
 			// dividing by rate is important to adjust circle to any possible rate...
 			DelayN.ar(myPlayBuf, length/(2*rate), length/(2*rate), 1, myPlayBuf)
 			* mul

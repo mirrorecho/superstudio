@@ -1,6 +1,6 @@
 (
 
-initModule: { | self, ss |
+initModule: { | self |
 
 	SynthDef("ss.spacey", {
 		arg freq=440, amp=0.1, gate=1;
@@ -20,7 +20,7 @@ initModule: { | self, ss |
 
 		sig1 = sig1!2 + sig2;
 
-		Out.ar(ss.bus.master, sig1!2);
+		Out.ar(self.ss.bus.master, sig1!2);
 
 	}).add;
 
@@ -36,7 +36,7 @@ initModule: { | self, ss |
 		sig2 = FreeVerb2.ar(sig2[0], sig2[1], mix:0.4);
 		env = EnvGen.kr(Env.perc, gate:gate, doneAction:2);
 		sig2 = sig2 * env;
-		Out.ar(ss.bus.master, sig2);
+		Out.ar(self.ss.bus.master, sig2);
 	}).add;
 
 }
