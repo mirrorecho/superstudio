@@ -17,7 +17,7 @@ var protoModule = (
 	title: "A super studio module",
 	initModule: { | self | }, // hook for function to initialize module
 
-	makeCopy: { | self | ().putAll(self) },
+	makeCopy: { arg self, eArgs=(); ().putAll(self).putAll(eArgs); },
 
 	makeModule: { arg self, moduleName, eModule=();
 		self[moduleName.asSymbol] = self.ss.protoModule.makeCopy.putAll(eModule);
