@@ -1,6 +1,18 @@
-~ss.load(["example"]);
+
+(
+// RUN FIRST:
+// ... update the following to local path of superstudio.sc
+("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
+)
+
 
 ~ss.loadCommon;
+~ss.buf.libraryPath = "/Users/rwest/Echo/Sound/Library/";
+~ss.buf.loadLibrary("japan-cicadas");
+~ss.buf.loadLibrary("shamisen");
+
+~ss.buf.play
+
 
 
 ~ss.example.ex;s
