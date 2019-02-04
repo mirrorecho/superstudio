@@ -128,6 +128,7 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 
 	};
 
+	// TO DO ... EVEN NEEDED?
 	myW.copyP =  {arg myW, newName, oldName, eValuesNew=();
 		var eNew  = myW[oldName.asSymbol].makeCopy(eValuesNew);
 		myW.makeP(newName, eNew);

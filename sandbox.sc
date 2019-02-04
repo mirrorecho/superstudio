@@ -30,15 +30,6 @@ d.so = {};
 
 e = ().putAll(d);
 
-e = (
-	bon:"Jovi",
-	is:"Cool",
-	fun: { | self |
-		self.bon;
-	}
-);
-
-
 Event;
 
 e.fun(~args);

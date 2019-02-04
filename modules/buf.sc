@@ -5,17 +5,6 @@ title: "Buffer utilities", // friendly name
 
 libraryPath: "/", // will generally be overwritten
 
-loadLibrary: {arg self, libraryName;
-	var postMsgs = [], eLibrary = ();
-	SoundFile.collectIntoBuffers(self.libraryPath ++ libraryName ++ "/*").do { arg buffer;
-		var bufferName = buffer.path.basename.splitext[0];
-		eLibrary[bufferName.asSymbol] = buffer;
-		postMsgs = postMsgs.add("Loaded buffer: ~ss.buf['" ++ libraryName ++ "']['" ++ bufferName ++ "']");
-	};
-	self.makeModule(libraryName, eLibrary);
-	self.ss.postPretty(postMsgs);
-},
-
 initModule: { | self |
 	// TO DO: auto-ability to start from end of buffer
 	SynthDef("ss.buf.play", {arg buffer, amp=1.0, rate=1.0, start=0;
@@ -63,8 +52,20 @@ initModule: { | self |
 	}).add;
 },
 
+loadLibrary: {arg self, libraryName;
+	var postMsgs = [], eLibrary = ();
+	SoundFile.collectIntoBuffers(self.libraryPath ++ libraryName ++ "/*").do { arg buffer;
+		var bufferName = buffer.path.basename.splitext[0];
+		eLibrary[bufferName.asSymbol] = buffer;
+		postMsgs = postMsgs.add("Loaded buffer: ~ss.buf['" ++ libraryName ++ "']['" ++ bufferName ++ "']");
+	};
+	self.makeModule(libraryName, eLibrary);
+	self.ss.postPretty(postMsgs);
+},
+
 makeSynth: { arg self, synthName, libraryName, bufferName, args=[];
 	var buffer, mySynth;
+	"BOOHOO".postln;
 	if (self.includesKey(libraryName.asSymbol), {
 		if (self[libraryName.asSymbol].includesKey(bufferName.asSymbol), {
 			buffer = self[libraryName.asSymbol][bufferName.asSymbol];
@@ -82,6 +83,7 @@ makeSynth: { arg self, synthName, libraryName, bufferName, args=[];
 
 play: { arg self, libraryName, bufferName, args=[];
 	args.postln;
+	self.postln;
 	self.makeSynth("ss.buf.play", libraryName, bufferName, *args);
 },
 

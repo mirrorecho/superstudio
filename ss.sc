@@ -12,6 +12,8 @@ TO DO!
 (
 
 var myPath = "".resolveRelative;
+
+// DEFINES protoModule as an event with standard methods for any super studio module
 var protoModule = (
 	name: "YO?",
 	title: "A super studio module",
