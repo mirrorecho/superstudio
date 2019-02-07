@@ -24,7 +24,7 @@ var protoModule = (
 	makeModule: { arg self, moduleName, eModule=();
 		self[moduleName.asSymbol] = self.ss.protoModule.makeCopy.putAll(eModule);
 		self[moduleName.asSymbol].name = moduleName;
-		self[moduleName.asSymbol].initModule;
+		self[moduleName.asSymbol].initModule.value;
 		self[moduleName.asSymbol];
 	},
 
