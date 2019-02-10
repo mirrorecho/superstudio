@@ -18,6 +18,7 @@ makeSamplerModule: {
 	arg self, name, sampleData; // sampleData should be an array 2 or 3-element arrays, each with sample and frequency
 	var myS = self.makeModule(name, (sampleData:sampleData));
 
+	// TO DO...  could use pairsDo to simplify this
 
 	// adds the cutover frequencies as third element to each array, if doesn't already exist (except for the last array);
 	(myS.sampleData.size).do{ |i|
@@ -103,5 +104,60 @@ makePercSampler: {
 	myS;
 },
 
+
+makeDistortionSampler: {
+
+	arg self, name, sampleData;
+	var myS = self.makeSamplerModule(name, sampleData);
+
+	SynthDef(name, {
+		arg amp=1.0, start=0, freq=440, attackTime=0.001, releaseTime=4, curve= -1, distortion=0,
+		bus=~ss.bus.master;
+		var mySample, buffer, buffer_freq, rate, sig, env, lpf_freq, lpf_attempt_freq, lpf_cutoff_freq,
+		sig_distort;
+
+		mySample = myS.getSample(freq);
+		buffer = mySample[0];
+		buffer_freq=mySample[1];
+		lpf_cutoff_freq = 20000;
+
+		rate = freq / buffer_freq;
+		sig = PlayBuf.ar(2,
+			bufnum:buffer,
+			rate:BufRateScale.kr(buffer)*rate,
+			startPos:BufSampleRate.kr(buffer) * start,
+			doneAction:2,
+		);
+		// lpf_attempt_freq = freq * 20/distortion;
+		//
+		// lpf_freq = (lpf_attempt_freq * (lpf_attempt_freq <= lpf_cutoff_freq)) + (lpf_cutoff_freq * (lpf_attempt_freq > lpf_cutoff_freq));
+		// sig = (sig * DC.kr(distortion)).distort;
+		// sig = sig + sig.cubed;
+
+		sig  = sig * AmpComp.kr(freq, 400, 0.2);
+
+		sig_distort = (sig * (3 + (distortion * 40))).distort * (1-(distortion/1.4)) * 0.4;
+		sig = (sig * (1-distortion)) + (sig_distort * distortion);
+		env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
+		sig = sig * EnvGen.ar(env, doneAction: 2);
+		sig = sig * amp;
+
+		Out.ar(bus, sig);
+
+	}).add;
+
+	myS;
+},
+
+
+/*			var in, distortion, fx, y, z;
+
+			in = AudioIn.ar(1);
+
+			distortion = ((in * MouseX.kr(1,10)).distort * MouseY.kr(1,10)).distort;
+
+			fx = Compander.ar(distortion, distortion, 1, 0, 1 ); // sustain
+
+			Out.ar(0, LeakDC.ar(fx + in ) !2 );*/
 
 )

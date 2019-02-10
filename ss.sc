@@ -1,12 +1,12 @@
 /*
 TO DO!
- - more cool synths
- - - - drone makerfds
- - - - swish, swell
- - - - swish effects
- - - - ghost sound
- - - - simple drums
- - tempo clock module?
+- more cool synths
+- - - drone makerfds
+- - - swish, swell
+- - - swish effects
+- - - ghost sound
+- - - simple drums
+- tempo clock module?
 */
 
 (
@@ -19,25 +19,70 @@ var protoModule = (
 	title: "A super studio module",
 	initModule: { | self | }, // hook for function to initialize module
 
-	makeCopy: { arg self, eArgs=(); ().putAll(self).putAll(eArgs); },
-
-	makeModule: { arg self, moduleName, eModule=();
-		self[moduleName.asSymbol] = self.ss.protoModule.makeCopy.putAll(eModule);
-		self[moduleName.asSymbol].name = moduleName;
-		self[moduleName.asSymbol].initModule.value;
-		self[moduleName.asSymbol];
+	getCopy: { arg self, name, eValues=();
+		var myCopy = ().putAll(self).putAll(eValues);
+		if (name!=nil, {self.name=name;});
+		myCopy;
 	},
 
-	// postln: { | self | "MA"},
+	makeCopy: { arg self, name, eValues=();
+		self[name.asSymbol] = self.getCopy(name, eValues);
+		self[name.asSymbol];
+	},
 
-	// TO CONSIDER.. loadExtend?
+	getModule: { arg self, name, eValues=();
+		var myModule = self.ss.protoModule.getCopy(name).putAll(eValues);
+		myModule.name=name;
+		myModule.initModule.value;
+		myModule;
+	},
+
+	makeModule: { arg self, name, eValues=();
+		self[name.asSymbol] = self.getModule(name, eValues);
+		self[name.asSymbol];
+	},
+
+	getModuleList: { arg self, name, list=[], eValues=();
+		var myModule = self.getModule(name, eValues);
+		myModule.listSize = list.size;
+		myModule.nameList = list.size.collect{|i| list[i].name.asSymbol;};
+		list.do{|e| myModule[e.name.asSymbol] = e;};
+
+		myModule.byIndex = {arg myModule, index;
+			myModule[myModule.nameList[index]];
+		};
+
+		myModule.list = {arg myModule; myModule.listSize.collect{|i| myModule.byIndex(i);}};
+
+		myModule.getCopy = { arg myModule, name, eListValues=(), eValues=();
+			var myCopy = ().putAll(myModule).putAll(eValues);
+			if (name!=nil, {myCopy.name=name;});
+			myCopy.list.do{|e|
+				// e.name.postln;
+				myCopy[e.name.asSymbol] = myCopy[e.name.asSymbol].getCopy(e.name, eListValues[e.name.asSymbol])
+			};
+			myCopy;
+		};
+
+		myModule.makeCopy = {  arg myModule, name, eListValues=(), eValues=();
+			self[name.asSymbol] = myModule.getCopy(name, eListValues=(), eValues=());
+		};
+		myModule;
+	},
+
+	makeModuleList: { arg self, name, list=[], eValues=();
+		self[name.asSymbol] = self.getModuleList(name, list, eValues);
+		self[name.asSymbol];
+	},
+
 
 	load: { arg self, modules=[], callback={}, path;
 		var eModule;
 		{
 			s.sync;
 			modules.do { arg moduleName;
-				(path ?? (self.ss.path ++ "modules/") ++ moduleName ++ ".sc").postln;
+				(path ?? (self.ss.
+					path ++ "modules/") ++ moduleName ++ ".sc").postln;
 				eModule = (path ?? (self.ss.path ++ "modules/") ++ moduleName ++ ".sc").load;
 				self.makeModule(moduleName, eModule);
 				s.sync;
@@ -53,11 +98,10 @@ var protoModule = (
 	},
 );
 
-~ss = protoModule.makeCopy;
-protoModule.ss = ~ss;
-~ss.protoModule = protoModule;
-~ss.ss = ~ss;
-~ss.name = "ss";
+~ss = protoModule.makeCopy("ss");
+protoModule.ss = ~ss; // NEEDED???
+~ss.protoModule = protoModule; // NEEDED???
+~ss.ss = ~ss; // NEEDED???
 ~ss.title = "Super Studio";
 
 ~ss.putAll((
@@ -68,7 +112,7 @@ protoModule.ss = ~ss;
 
 	projectPath: myPath, // will typically replace with project specific path
 
-	start: {arg self, callback={};
+	startServer: {arg self, callback={};
 		var ssRecycle = {
 			s.freeAll;
 			Server.all.do(Buffer.freeAll); // necessary even with reboot?
@@ -93,8 +137,10 @@ protoModule.ss = ~ss;
 
 ));
 
-~ss.start;
+~ss.startServer;
 
 )
+
+
 
 

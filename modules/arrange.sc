@@ -26,36 +26,33 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 	// shares settings like tempo clock
 	var myW = self.makeModule(workName, eWorkInit);
 
-	self.postln;
-	self.makeModule.postln;
-	myW.postln;
+	myW.makeBlock = { arg myW, name, list=[], eValues=();
+		var myB = myW.makeModuleList(name, list, eValues);
 
-	// TO DO... rethink these, and use eSomething naming convention
-	myW.makeSeqBook = {arg myW, innerItems, eBook;
-		var mySeq = [];
-		if (eBook.bookend[0] > 0,
-			{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([eBook.bookend[0]])]))}, );
-		mySeq = mySeq.addAll(innerItems);
-		if (eBook.bookend[1] > 0,
-			{mySeq = mySeq.add(Pbind(*[note:\rest, dur:Pseq([eBook.bookend[1]])]))}, );
-		Pseq(mySeq);
-	};
+		myB.patternType = Ppar;
 
-	myW.makeSeq = {arg myW, namesList, eValues=();
-		var eSeqValues = (bookend:[0,0]).putAll(eValues);
-		var eItemValues = ().putAll(eValues).putAll((bookend:[0,0] ));
-		var myBindList = namesList.collect { arg name; myW[name.asSymbol].bind(eItemValues);  };
-		if (eSeqValues.bookend.maxItem > 0,
-			{ myW.makeSeqBook(myBindList, eSeqValues); },
-			{ Pseq(myBindList); },
-		);
-	};
+		myB.bind = {arg myB, eValues=();
+			myB.patternType.new(
+				myB.listSize.collect{|i| myB.byIndex(i).bind(eValues[myB.nameList[i]]) };
+			);
+		};
 
-	myW.makeBlock = { arg myW, name;
-		var myB = myW.makeModule(name);
+		myB.playMe = {arg myB, eValues=();
+			myB.bind(eValues).play(clock:myW.clock);
+		};
+
 
 	};
 
+
+	myW.makeSeq = { arg myW, name, list=[], eValues=();
+		var myS = myW.makeBlock(name, list, eValues);
+		myS.patternType = Pseq;
+		myS;
+	};
+
+
+	// consider renaming to makeStream, makeLine or something!
 	myW.makeP = {arg myW, name, ePatternInit=();
 		var myP = myW.makeModule(name, self.ePatternDefault);
 
@@ -87,7 +84,7 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 		myP.bind = {arg myP, eValues=();
 			// combines values in iniital event with the new values to be used for the Pbindf:
 			// TO DO MAYBE... only pull in the values from the parent event that make sense???
-			var eCombo = myP.makeCopy(eValues);
+			var eCombo = myP.getCopy(myP.name, eValues);
 			var myBind;
 			var myPattern;
 
@@ -114,7 +111,7 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 			// now set the dur value to use as a Pser loop through the rhythm array
 			eCombo.dur = Pser(eCombo.rhythm, eCombo.sequenceLength);
 
-			eCombo.rhythm.postln;
+			// eCombo.rhythm.postln;
 
 			myBind = Pbindf(myPattern, *eCombo.asPairs); // TO DO... necessary????
 
@@ -127,12 +124,8 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 		};
 
 	};
+	myW;
 
-	// TO DO ... EVEN NEEDED?
-	myW.copyP =  {arg myW, newName, oldName, eValuesNew=();
-		var eNew  = myW[oldName.asSymbol].makeCopy(eValuesNew);
-		myW.makeP(newName, eNew);
-	};
 },
 )
 
