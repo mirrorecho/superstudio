@@ -1,16 +1,9 @@
 (
 
-// namespace: ["buf"],
-title: "Sample utilities", // friendly name
+title: "Sample utilities",
 
 
-initModule: { arg self, myname="ya";
-	myname.postln;
-},
-
-
-makeTest: { arg self;
-	self.postln;
+initModule: { arg self;
 },
 
 
@@ -42,7 +35,6 @@ makeSamplerModule: {
 },
 
 
-
 makeSampler: {
 
 	arg self, name, sampleData;
@@ -71,6 +63,7 @@ makeSampler: {
 
 	myS;
 },
+
 
 makePercSampler: {
 
@@ -128,11 +121,6 @@ makeDistortionSampler: {
 			startPos:BufSampleRate.kr(buffer) * start,
 			doneAction:2,
 		);
-		// lpf_attempt_freq = freq * 20/distortion;
-		//
-		// lpf_freq = (lpf_attempt_freq * (lpf_attempt_freq <= lpf_cutoff_freq)) + (lpf_cutoff_freq * (lpf_attempt_freq > lpf_cutoff_freq));
-		// sig = (sig * DC.kr(distortion)).distort;
-		// sig = sig + sig.cubed;
 
 		sig  = sig * AmpComp.kr(freq, 400, 0.2);
 
@@ -150,14 +138,6 @@ makeDistortionSampler: {
 },
 
 
-/*			var in, distortion, fx, y, z;
 
-			in = AudioIn.ar(1);
-
-			distortion = ((in * MouseX.kr(1,10)).distort * MouseY.kr(1,10)).distort;
-
-			fx = Compander.ar(distortion, distortion, 1, 0, 1 ); // sustain
-
-			Out.ar(0, LeakDC.ar(fx + in ) !2 );*/
 
 )

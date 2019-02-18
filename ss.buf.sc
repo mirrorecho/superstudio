@@ -15,7 +15,7 @@ initModule: { | self |
 			doneAction:2,
 		);
 		sig = sig * amp;
-		Out.ar(self.ss.bus.master, sig);
+		Out.ar(~ss.bus.master, sig);
 	}).add;
 
 	SynthDef("ss.buf.perc", {arg buffer, amp=1.0, rate=1.0, start=0, attackTime=0.01, releaseTime=1, curve= -4;
@@ -27,7 +27,7 @@ initModule: { | self |
 		);
 		var env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
 		sig = sig * amp * EnvGen.ar(env, doneAction: 2);
-		Out.ar(self.ss.bus.master, sig);
+		Out.ar(~ss.bus.master, sig);
 	}).add;
 
 
@@ -44,12 +44,25 @@ initModule: { | self |
 			bufnum:buffer,
 			rate:BufRateScale.kr(buffer)*rate,
 			loop:1) * EnvGen.ar(Env.circle([0,1,0], [length/(2*rate), length/(2*rate), 0]));
-		Out.ar(self.ss.bus.master,
+		Out.ar(~ss.bus.master,
 			// dividing by rate is important to adjust circle to any possible rate...
 			DelayN.ar(myPlayBuf, length/(2*rate), length/(2*rate), 1, myPlayBuf)
 			* mul
 			,0.0);
 	}).add;
+
+	SynthDef("ss.buf.swell", { arg buffer, amp=1.0, rate=1.0, start=0, dur=1, releaseTime=0.01, curve=4, tempo=1;
+		var sig = PlayBuf.ar(2,
+			bufnum:buffer,
+			rate:BufRateScale.kr(buffer)*rate,
+			startPos:BufSampleRate.kr(buffer) * start,
+			doneAction:2,
+		);
+		var env = Env.perc(attackTime:dur/tempo, releaseTime:releaseTime, level:amp, curve:curve);
+		sig = sig * amp * EnvGen.ar(env, doneAction: 2);
+		Out.ar(~ss.bus.master, sig);
+	}).add;
+
 },
 
 loadLibrary: {arg self, libraryName;
@@ -60,7 +73,7 @@ loadLibrary: {arg self, libraryName;
 		postMsgs = postMsgs.add("Loaded buffer: ~ss.buf['" ++ libraryName ++ "']['" ++ bufferName ++ "']");
 	};
 	self.makeModule(libraryName, eLibrary);
-	self.ss.postPretty(postMsgs);
+	~ss.postPretty(postMsgs);
 },
 
 makeSynth: { arg self, synthName, libraryName, bufferName, args=[];
@@ -72,10 +85,10 @@ makeSynth: { arg self, synthName, libraryName, bufferName, args=[];
 			args.postln;
 			mySynth = Synth(synthName, [buffer:buffer]++args);
 		}, {
-			self.ss.postPretty(["ERROR: cannot play buffer \"" ++ bufferName ++ "\" because it does not exist in the library \"" ++ libraryName ++ "\"."]);
+			~ss.postPretty(["ERROR: cannot play buffer \"" ++ bufferName ++ "\" because it does not exist in the library \"" ++ libraryName ++ "\"."]);
 		});
 	}, {
-		self.ss.postPretty(["ERROR: cannot play buffer in library \"" ++ libraryName ++ "\" because the library has not been loaded."]);
+		~ss.postPretty(["ERROR: cannot play buffer in library \"" ++ libraryName ++ "\" because the library has not been loaded."]);
 	});
 	mySynth;
 },

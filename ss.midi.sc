@@ -4,7 +4,7 @@
 // namespace:[],
 title: "Basic MIDI Controller Utility",
 
-initModule: { | self, ss |
+initModule: { | self |
 
 	MIDIIn.connectAll;
 
