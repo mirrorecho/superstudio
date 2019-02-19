@@ -7,31 +7,34 @@ libraryPath: "/", // will generally be overwritten
 
 initModule: { | self |
 	// TO DO: auto-ability to start from end of buffer
-	SynthDef("ss.buf.play", {arg buffer, amp=1.0, rate=1.0, start=0;
+	SynthDef(
+		"bufPlay", {arg bufnum, amp=1.0, rate=1.0, start=0, out=~ss.bus.master;
 		var sig = PlayBuf.ar(2,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*rate,
-			startPos:BufSampleRate.kr(buffer) * start,
+			bufnum:bufnum,
+			rate:BufRateScale.kr(bufnum)*rate,
+			startPos:BufSampleRate.kr(bufnum) * start,
 			doneAction:2,
 		);
 		sig = sig * amp;
-		Out.ar(~ss.bus.master, sig);
+		Out.ar(out, sig);
 	}).add;
 
-	SynthDef("ss.buf.perc", {arg buffer, amp=1.0, rate=1.0, start=0, attackTime=0.01, releaseTime=1, curve= -4;
+	SynthDef("bufPerc", {
+		arg bufnum, amp=1.0, rate=1.0, start=0, attackTime=0.001, releaseTime=1, curve= -4, out=~ss.bus.master;
 		var sig = PlayBuf.ar(2,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*rate,
-			startPos:BufSampleRate.kr(buffer) * start,
+			bufnum:bufnum,
+			rate:BufRateScale.kr(bufnum)*rate,
+			startPos:BufSampleRate.kr(bufnum) * start,
 			doneAction:2,
 		);
 		var env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
 		sig = sig * amp * EnvGen.ar(env, doneAction: 2);
-		Out.ar(~ss.bus.master, sig);
+		Out.ar(out, sig);
 	}).add;
 
 
-	SynthDef("ss.buf.drone",{ arg buffer, amp=1.0, rate=1.0,
+	SynthDef("bufDrone",{
+		arg bufnum, amp=1.0, rate=1.0, out=~ss.bus.master,
 		// TO DO: implement these:
 		startOn=0, endOn=3,
 		fadeIn=0.1, sustain=1.0, fadeOut=0.1;
@@ -41,26 +44,27 @@ initModule: { | self |
 
 		var myPlayBuf = PlayBuf.ar(
 			numChannels:2,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*rate,
+			bufnum:bufnum,
+			rate:BufRateScale.kr(bufnum)*rate,
 			loop:1) * EnvGen.ar(Env.circle([0,1,0], [length/(2*rate), length/(2*rate), 0]));
-		Out.ar(~ss.bus.master,
+		Out.ar(out,
 			// dividing by rate is important to adjust circle to any possible rate...
 			DelayN.ar(myPlayBuf, length/(2*rate), length/(2*rate), 1, myPlayBuf)
 			* mul
 			,0.0);
 	}).add;
 
-	SynthDef("ss.buf.swell", { arg buffer, amp=1.0, rate=1.0, start=0, dur=1, releaseTime=0.01, curve=4, tempo=1;
+	SynthDef("bufSwell", {
+		arg bufnum, amp=1.0, rate=1.0, start=0, dur=1, releaseTime=0.01, curve=4, tempo=1, out=~ss.bus.master;
 		var sig = PlayBuf.ar(2,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*rate,
-			startPos:BufSampleRate.kr(buffer) * start,
+			bufnum:bufnum,
+			rate:BufRateScale.kr(bufnum)*rate,
+			startPos:BufSampleRate.kr(bufnum) * start,
 			doneAction:2,
 		);
 		var env = Env.perc(attackTime:dur/tempo, releaseTime:releaseTime, level:amp, curve:curve);
 		sig = sig * amp * EnvGen.ar(env, doneAction: 2);
-		Out.ar(~ss.bus.master, sig);
+		Out.ar(out, sig);
 	}).add;
 
 },
@@ -76,36 +80,20 @@ loadLibrary: {arg self, libraryName;
 	~ss.postPretty(postMsgs);
 },
 
-makeSynth: { arg self, synthName, libraryName, bufferName, args=[];
-	var buffer, mySynth;
-	"BOOHOO".postln;
-	if (self.includesKey(libraryName.asSymbol), {
-		if (self[libraryName.asSymbol].includesKey(bufferName.asSymbol), {
-			buffer = self[libraryName.asSymbol][bufferName.asSymbol];
-			args.postln;
-			mySynth = Synth(synthName, [buffer:buffer]++args);
-		}, {
-			~ss.postPretty(["ERROR: cannot play buffer \"" ++ bufferName ++ "\" because it does not exist in the library \"" ++ libraryName ++ "\"."]);
-		});
-	}, {
-		~ss.postPretty(["ERROR: cannot play buffer in library \"" ++ libraryName ++ "\" because the library has not been loaded."]);
-	});
-	mySynth;
-},
 
-
-play: { arg self, libraryName, bufferName, args=[];
-	args.postln;
-	self.postln;
-	self.makeSynth("ss.buf.play", libraryName, bufferName, *args);
+playBuf: { arg self, libraryName, bufferName, args=[];
+	var bufnum = self[libraryName.asSymbol][bufferName.asSymbol];
+	~ss.synther.makeSynth("bufPlay", "bufPlay", [bufnum:bufnum]++args);
 },
 
 drone: { arg self, libraryName, bufferName, args=[];
-	self.makeSynth("ss.buf.drone", libraryName, bufferName, args);
+	var bufnum = self[libraryName.asSymbol][bufferName.asSymbol];
+	~ss.synther.makeSynth("bufDrone", "bufDrone", [bufnum:bufnum]++args);
 },
 
 perc: { arg self, libraryName, bufferName, args=[];
-	self.makeSynth("ss.buf.perc", libraryName, bufferName, args);
+	var bufnum = self[libraryName.asSymbol][bufferName.asSymbol];
+	~ss.synther.makeSynth("bufPerc", "bufPerc", [bufnum:bufnum]++args);
 },
 
 

@@ -2,10 +2,8 @@
 
 title: "Sample utilities",
 
-
 initModule: { arg self;
 },
-
 
 makeSamplerModule: {
 	arg self, name, sampleData; // sampleData should be an array 2 or 3-element arrays, each with sample and frequency

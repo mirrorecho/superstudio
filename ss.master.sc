@@ -1,7 +1,6 @@
 (
 
-// namespace: [], // namespace hierarchy for module
-title: "Mastering: Fx Busses and Synths", // friendly name
+title: "Mastering: Fx Busses and Synths",
 
 initModule: { | self |
 	{

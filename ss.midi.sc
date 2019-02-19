@@ -1,7 +1,6 @@
 
 (
 
-// namespace:[],
 title: "Basic MIDI Controller Utility",
 
 initModule: { | self |

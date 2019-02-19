@@ -1,6 +1,6 @@
 (
 // RUN FIRST:
-// ... update the following to local path of superstudio.sc
+// ... update the following to local path of ss.sc
 ("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
 )
 
@@ -15,6 +15,5 @@
 	~sandbox = ~ss.arrange.makeWork("sandbox");
 });
 )
-
 
 

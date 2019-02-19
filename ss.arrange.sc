@@ -2,8 +2,6 @@
 // settings are passed as events, with a naming: eMyDescription
 // e.g.: eInit, eSeqValues, etc.
 
-
-
 (
 title: "Arrangement Tools with Patterns",
 
@@ -13,7 +11,7 @@ ePatternDefault: (
 	repeats:1,
 	rhythm:[1],
 	notes:[0],
-	bookend:[0,0]
+	// bookend:[0,0] // TO DO: implement bookend rests
 ),
 
 
@@ -23,7 +21,6 @@ initModule: { | self |
 },
 
 makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
-	// shares settings like tempo clock
 	var myW = self.makeModule(workName, eWorkInit);
 
 	myW.makeBlock = { arg myW, name, list=[], eValues=();
@@ -40,10 +37,7 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 		myB.playMe = {arg myB, eValues=();
 			myB.bind(eValues).play(clock:myW.clock);
 		};
-
-
 	};
-
 
 	myW.makeSeq = { arg myW, name, list=[], eValues=();
 		var myS = myW.makeBlock(name, list, eValues);
@@ -51,13 +45,11 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 		myS;
 	};
 
-
-	// consider renaming to makeStream, makeLine or something!
+	// TO DO: makeP ?? funciton name OK?
 	myW.makeP = {arg myW, name, ePatternInit=();
 		var myP = myW.makeModule(name, self.ePatternDefault);
 
 		myP.putAll(ePatternInit);
-
 
 		myP.sequenceLength = {arg myP;
 			[ myP.eventMax,
@@ -69,14 +61,12 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 			sum( myP.sequenceLength.collect{ |i| myP.rhythm[i % myP.rhythm.size]; } );
 		};
 
-		// TO DO: this changes with TempoClock:
-/*		myP.timeLength = {arg myP;
+		// TO DO: IMPLEMENT timeLength (needs to work with TempoClock):
+		/* myP.timeLength = {arg myP;
 			myP.rhythmLength * (1/myP.bpm) * 60;
 		};*/
 
 		myP.playMe = {arg myP, eValues=();
-			// TO DO: consider ... simpler to pass protoEvent into play method as
-			// opposed to using PbindF below???
 			myP.bind(eValues).play(clock:myW.clock);
 		};
 
@@ -99,11 +89,12 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 				{eCombo.notes = [eCombo.note];}
 			);
 
-			// if a dur value is passed, then replace the rhythm array
-			// TO DO: update to work with tempoClock
-			// if (eCombo.includesKey('dur') && eCombo.dur.isNil.not,
-			// 	{eCombo.rhythm = [eCombo.dur * eCombo.bpm / 60]};
-			// );
+			// TO DO: CONSIDER IMPLEMENTING THE FOLLOWING:
+			// // if a dur value is passed, then replace the rhythm array
+			// // TO DO: update to work with tempoClock
+			// // if (eCombo.includesKey('dur') && eCombo.dur.isNil.not,
+			// // 	{eCombo.rhythm = [eCombo.dur * eCombo.bpm / 60]};
+			// // );
 
 			// now set the note value to use as a Pser loop through the notes array
 			eCombo.note = Pser(eCombo.notes, eCombo.sequenceLength);
@@ -111,16 +102,8 @@ makeWork: {arg self, workName, eWorkInit=(clock: TempoClock.new);
 			// now set the dur value to use as a Pser loop through the rhythm array
 			eCombo.dur = Pser(eCombo.rhythm, eCombo.sequenceLength);
 
-			// eCombo.rhythm.postln;
-
 			myBind = Pbindf(myPattern, *eCombo.asPairs); // TO DO... necessary????
 
-			if (eCombo.bookend.maxItem > 0,
-				{
-					myW.makeSeqBook(myBind, eCombo);
-				},
-				{ myBind },
-			);
 		};
 
 	};

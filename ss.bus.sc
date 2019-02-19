@@ -1,7 +1,5 @@
 (
 
-// namespace: [],
-
 title: "Audio/control busses",
 
 initModule: { | self |

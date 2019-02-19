@@ -48,7 +48,6 @@ var protoModule = (
 			var myCopy = ().putAll(myModule).putAll(eValues);
 			if (name!=nil, {myCopy.name=name;});
 			myCopy.list.do{|e|
-				// e.name.postln;
 				myCopy[e.name.asSymbol] = myCopy[e.name.asSymbol].getCopy(e.name, eListValues[e.name.asSymbol])
 			};
 			myCopy;
@@ -136,6 +135,7 @@ var protoModule = (
 		CmdPeriod.removeAll;
 		CmdPeriod.add({
 			self.load(self.modules, callback);
+			// TO DO: load common synther libraries and common sampler libraries
 		});
 		CmdPeriod.run;
 	},
