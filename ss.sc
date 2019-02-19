@@ -1,87 +1,164 @@
-/*
-TO DO!
- - more cool synths
- - - - drone maker
- - - - swish, swell
- - - - swish effects
- - - - ghost sound
- - - - simple drums
- - tempo clock module?
- - Pbind/Proxy factory module?
- - KISS
- - module to work with Max/MSP easily
-*/
-
 (
-var initialized = false;
-if ( currentEnvironment.includesKey(\ss) , {initialized = ~ss.initialized;});
-~ss = Environment.make;
-~ss.know = true;
-~ss.modules=[];
-~ss.path = "".resolveRelative; // funny, doesn't work if this is current file open in sublime text
-~ss.projectPath = ~ss.path; // will typically replace with project specific path
-~ss.initialized = initialized; // set to true once ~ss first initialized (since some setup changes if the following code block called 2nd time)
 
-~ss.makeModule = { arg ss, name, namespace=[], title="", function={arg ss, module; };
-    var moduleNamespace = ss;
-    namespace.do { arg namespaceLevel;
-        if (moduleNamespace[namespaceLevel.asSymbol] == nil, {
-                moduleNamespace[namespaceLevel.asSymbol] = Environment.make;
-                moduleNamespace[namespaceLevel.asSymbol].know = true;
-                moduleNamespace[namespaceLevel.asSymbol].title = title;
-            }
-        );
-        moduleNamespace = moduleNamespace[namespaceLevel.asSymbol];
-    };
+var ssPath = "".resolveRelative;
 
-    function.value(ss:ss, module:moduleNamespace);
+// DEFINES protoModule as an event with standard methods for any super studio module
+var protoModule = (
+	name: "YO?",
+	title: "A super studio module",
+	path: ssPath,
+	initModule: { | self | }, // hook for function to initialize module
 
-    ss.modules = ss.modules ++ [name];
+	getCopy: { arg self, name, eValues=();
+		var myCopy = ().putAll(self).putAll(eValues);
+		if (name!=nil, {myCopy.name=name;});
+		myCopy;
+	},
+
+	makeCopy: { arg self, name, eValues=();
+		self[name.asSymbol] = self.getCopy(name, eValues);
+		self[name.asSymbol];
+	},
+
+	getModule: { arg self, name, eValues=();
+		var myModule = ~ss.protoModule.getCopy(name).putAll(eValues);
+		myModule.name=name;
+		myModule.initModule.value;
+		myModule;
+	},
+
+	makeModule: { arg self, name, eValues=();
+		self[name.asSymbol] = self.getModule(name, eValues);
+		self[name.asSymbol];
+	},
+
+	getModuleList: { arg self, name, list=[], eValues=();
+		var myModule = self.getModule(name, eValues);
+		myModule.listSize = list.size;
+		myModule.nameList = list.size.collect{|i| list[i].name.asSymbol;};
+		list.do{|e| myModule[e.name.asSymbol] = e;};
+
+		myModule.byIndex = {arg myModule, index;
+			myModule[myModule.nameList[index]];
+		};
+
+		myModule.list = {arg myModule; myModule.listSize.collect{|i| myModule.byIndex(i);}};
+
+		myModule.getCopy = { arg myModule, name, eListValues=(), eValues=();
+			var myCopy = ().putAll(myModule).putAll(eValues);
+			if (name!=nil, {myCopy.name=name;});
+			myCopy.list.do{|e|
+				myCopy[e.name.asSymbol] = myCopy[e.name.asSymbol].getCopy(e.name, eListValues[e.name.asSymbol])
+			};
+			myCopy;
+		};
+
+		myModule.makeCopy = {  arg myModule, name, eListValues=(), eValues=();
+			self[name.asSymbol] = myModule.getCopy(name, eListValues=(), eValues=());
+		};
+		myModule;
+	},
+
+	makeModuleList: { arg self, name, list=[], eValues=();
+		self[name.asSymbol] = self.getModuleList(name, list, eValues);
+		self[name.asSymbol];
+	},
+
+	loadModule: { arg self, name, path, prefix, callback={};
+		var modulePath = (path ?? self.path);
+		var moduleFullName = (prefix ?? "") ++ name;
+		var moduleFilePath = modulePath ++ moduleFullName ++ ".sc";
+		var eModule = (moduleFilePath).load;
+		eModule.path = path;
+		eModule.filePath = moduleFilePath;
+		self.makeModule(name, eModule);
+		s.sync;
+		~ss.postPretty(["Loaded module: '" ++ moduleFullName ++ "'"]);
+		callback.value;
+		eModule;
+	},
+
+	load: { arg self, modules=[], callback={};
+		{
+			s.sync;
+			modules.do { arg moduleName;
+				self.loadModule(moduleName, self.path, self.name ++ ".");
+			};
+			callback.value;
+		}.fork;
+	},
 
 
-};
+	openAll: { arg self;
+		self.filePath.openDocument;
+		self.subPaths.do{|p|p.openDocument;};
+	},
 
-~ss.load = { arg ss, modules=["core"], callback={};
-    {
-        s.sync;
-        modules.do { arg module;
-            (ss.path ++ "/modules/" ++ module ++ ".sc").loadPaths;
-            s.sync;
-			("Loaded Super Studio Module: '" ++ module ++ "'").postln;
-        };
-        callback.value;
-    }.fork;
-};
+	subPaths: { arg self;
+		(self.path ++ self.name ++ ".*.sc").pathMatch;
+	},
 
-~ss.loadLocal = { arg ss, modules=[], callback={};
-    {
-        s.sync;
-        modules.do { arg module;
-            (ss.projectPath ++ module ++ ".sc").loadPaths;
-            s.sync;
-			("Loaded Local Project Module: '" ++ module ++ "'").postln;
-        };
-        callback.value;
-    }.fork;
-};
+);
 
-~ss.start = {arg ss, callback={};
-	f = {
-		s.freeAll;
-		Server.all.do(Buffer.freeAll); // necessary even with reboot?
-		s.newAllocators; // new allocators (numbers) for busses, buffers, etc.
-		ss.load(["core"], callback);
-		ss.initialized = true;
-	};
-	postln(ss.initialized);
-	if ( ss.initialized != true, {ServerBoot.add(f, \default);} );
-	s.reboot;
-};
 
-~ss.loadCommon = { arg ss, callback={};
-	~ss.load(["bus","master","synth.library","buf"], callback); // note: removed "midi" from list
-};
+~ss = protoModule.getCopy("ss", (
 
-~ss.start;
+	protoModule: protoModule,
+
+	title: "Super Studio!",
+
+	filePath: ssPath ++ "ss.sc",
+
+	initialized: false,
+
+	modules: ["bus", "synther", "master", "buf", "midi", "arrange", "sampler"],
+
+	open: { arg self, subPath;
+		(~ss.path ++ subPath).openOS;
+	},
+
+	startServer: {arg self, callback={};
+		var ssRecycle;
+		ServerBoot.removeAll;
+		ssRecycle = {
+			s.freeAll; // necessary even with reboot?
+			Server.all.do(Buffer.freeAll); // necessary even with reboot?
+			s.newAllocators; // new allocators (numbers) for busses, buffers, etc.
+			// s.killAll;
+			self.initialized = true;
+		};
+		if ( self.initialized != true, {ServerBoot.add(ssRecycle, \default);} );
+		s.reboot;
+	},
+
+	initModule: { arg self, callback={};
+		CmdPeriod.removeAll;
+		CmdPeriod.add({
+			self.load(self.modules, callback);
+			// TO DO: load common synther libraries and common sampler libraries
+		});
+		CmdPeriod.run;
+	},
+
+	startup: { arg self, callback={};
+
+	},
+
+
+	postPretty: { arg self, msgs=[""];
+		"-----------------------".postln;
+		msgs.do {arg msg; msg.postln; };
+		" ".postln;
+	},
 
 )
+
+);
+
+~ss.startServer;
+
+)
+
+
+
+

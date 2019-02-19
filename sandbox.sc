@@ -1,22 +1,19 @@
 (
-~yo = Environment.make;
-~yo.know = true;
-~yo.yo1 = { arg yo;
-	{
-		// s.reboot;
-		s.sync;
-		postln("HELLO DOLLY");
-		yo.yo2;
-	}.fork;
-};
-~yo.yo2 = { arg yo;
-	{
-		1.wait;
-		postln("HELLO SHEEP!!");
-	}.fork;
-};
+// RUN FIRST:
+// ... update the following to local path of ss.sc
+("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
+)
 
+~ss.openAll;
+
+(
+~ss.initModule({
+	~ss.buf.libraryPath = "/Users/rwest/Echo/Sounds/Library/";
+	~ss.buf.loadLibrary("japan-cicadas");
+	~ss.buf.loadLibrary("shamisen");
+	~ss.buf.loadLibrary("piano");
+	~sandbox = ~ss.arrange.makeWork("sandbox");
+});
 )
 
 
-~yo.yo1;
