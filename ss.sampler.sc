@@ -39,7 +39,7 @@ makeSampler: {
 	var myS = self.makeSamplerModule(name, sampleData);
 
 	SynthDef(name, {
-		arg amp=1.0, start=0, freq=440, bus=~ss.bus.master;
+		arg amp=1.0, start=0, freq=440, out=~ss.bus.master;
 		var mySample, buffer, buffer_freq, rate, sig;
 
 		mySample = myS.getSample(freq);
@@ -55,7 +55,7 @@ makeSampler: {
 		);
 		sig = sig * amp;
 
-		Out.ar(bus, sig);
+		Out.ar(out, sig);
 
 	}).add;
 
@@ -69,7 +69,7 @@ makePercSampler: {
 	var myS = self.makeSamplerModule(name, sampleData);
 
 	SynthDef(name, {
-		arg amp=1.0, start=0, freq=440, attackTime=0.01, releaseTime=2, curve= -4, bus=~ss.bus.master;
+		arg amp=1.0, start=0, freq=440, attackTime=0.01, releaseTime=2, curve= -4, out=~ss.bus.master;
 		var mySample, buffer, buffer_freq, rate, sig, env;
 
 		mySample = myS.getSample(freq);
@@ -88,7 +88,7 @@ makePercSampler: {
 		env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
 		sig = sig * EnvGen.ar(env, doneAction: 2);
 
-		Out.ar(bus, sig);
+		Out.ar(out, sig);
 
 	}).add;
 
@@ -103,7 +103,7 @@ makeDistortionSampler: {
 
 	SynthDef(name, {
 		arg amp=1.0, start=0, freq=440, attackTime=0.001, releaseTime=4, curve= -1, distortion=0,
-		bus=~ss.bus.master;
+		out=~ss.bus.master;
 		var mySample, buffer, buffer_freq, rate, sig, env, lpf_freq, lpf_attempt_freq, lpf_cutoff_freq,
 		sig_distort;
 
@@ -120,15 +120,13 @@ makeDistortionSampler: {
 			doneAction:2,
 		);
 
-		sig  = sig * AmpComp.kr(freq, 400, 0.2);
-
 		sig_distort = (sig * (3 + (distortion * 40))).distort * (1-(distortion/1.4)) * 0.4;
 		sig = (sig * (1-distortion)) + (sig_distort * distortion);
 		env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
 		sig = sig * EnvGen.ar(env, doneAction: 2);
 		sig = sig * amp;
 
-		Out.ar(bus, sig);
+		Out.ar(out, sig);
 
 	}).add;
 
