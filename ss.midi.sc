@@ -8,12 +8,12 @@ initModule: { | self |
 	MIDIIn.connectAll;
 
 	self.notes = Array.newClear(128);
-	self.synthName = "ss.spacey";
+	self.synthName = "rainpiano";
 
 	MIDIdef.noteOn(\noteOn, {arg vel, midinote;
 		self.notes[midinote] = Synth(self.synthName, [
 			\freq, (midinote + rand(0.2) - 0.1).midicps,
-			\amp, vel.linexp(0, 127, 0.01, 0.69)
+			\amp, vel.linlin(0, 127, 0.001, 1.1)
 		]);
 	}
 	);

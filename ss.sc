@@ -16,12 +16,14 @@ var protoModule = (
 	},
 
 	makeCopy: { arg self, name, eValues=();
-		self[name.asSymbol] = self.getCopy(name, eValues);
-		self[name.asSymbol];
+		var myModule = self.getCopy(name, eValues);
+		self.parent[name.asSymbol] = myModule;
+		myModule;
 	},
 
 	getModule: { arg self, name, eValues=();
 		var myModule = ~ss.protoModule.getCopy(name).putAll(eValues);
+		myModule.parent = self;
 		myModule.name=name;
 		myModule.initModule.value;
 		myModule;
@@ -54,7 +56,7 @@ var protoModule = (
 		};
 
 		myModule.makeCopy = {  arg myModule, name, eListValues=(), eValues=();
-			self[name.asSymbol] = myModule.getCopy(name, eListValues=(), eValues=());
+			self.parent[name.asSymbol] = myModule.getCopy(name, eListValues=(), eValues=());
 		};
 		myModule;
 	},
@@ -119,6 +121,7 @@ var protoModule = (
 
 	startServer: {arg self, callback={};
 		var ssRecycle;
+		CmdPeriod.removeAll;
 		ServerBoot.removeAll;
 		ssRecycle = {
 			s.freeAll; // necessary even with reboot?

@@ -11,6 +11,7 @@
 	~ss.buf.libraryPath = "/Users/rwest/Echo/Sounds/Library/";
 	~ss.buf.loadLibrary("japan-cicadas");
 	~ss.buf.loadLibrary("shamisen");
+	~ss.buf.loadLibrary("stringy");
 	~ss.buf.loadLibrary("piano");
 	~ss.sampler.makeDistortionSampler(
 		"rainpiano",
@@ -61,3 +62,11 @@
 
 ~sandbox.off.playMe;
 
+MIDIClient.init;
+MIDIClient.list;
+
+~ss.buf['piano']['A3'].play;
+~ss.buf.perc('stringy','G3-sulpont-surge', [start:5.464, out:~ss.bus.rainEcho, attackTime:0.2]);
+~ss.buf.perc('stringy','G3-sulpont-surge', [start:3, releaseTime:2, out:~ss.bus.rainEcho, attackTime:0.2]);
+
+~ss.midi.synthName="rainSpacey";
