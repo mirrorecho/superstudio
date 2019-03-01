@@ -71,11 +71,12 @@ var protoModule = (
 		var moduleFullName = (prefix ?? "") ++ name;
 		var moduleFilePath = modulePath ++ moduleFullName ++ ".sc";
 		var eModule = (moduleFilePath).load;
+		~ss.postPretty(["Loading module: '" ++ moduleFullName ++ "'"]);
 		eModule.path = path;
 		eModule.filePath = moduleFilePath;
 		self.makeModule(name, eModule);
 		s.sync;
-		~ss.postPretty(["Loaded module: '" ++ moduleFullName ++ "'"]);
+		("Module: '" ++ moduleFullName ++ "' success!").postln;
 		callback.value;
 		eModule;
 	},
@@ -137,6 +138,7 @@ var protoModule = (
 	initModule: { arg self, callback={};
 		CmdPeriod.removeAll;
 		CmdPeriod.add({
+			Server.all.do(Buffer.freeAll);
 			self.load(self.modules, callback);
 			// TO DO: load common synther libraries and common sampler libraries
 		});
@@ -149,9 +151,8 @@ var protoModule = (
 
 
 	postPretty: { arg self, msgs=[""];
-		"-----------------------".postln;
+		"----------------------------------".postln;
 		msgs.do {arg msg; msg.postln; };
-		" ".postln;
 	},
 
 )

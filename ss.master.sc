@@ -29,13 +29,16 @@ initModule: { | self |
 
 		s.sync;
 
-		~ss.synther.makeSynth("masterFx");
+		// masterOut synth has to be created first before masterFx... WHY?
 		~ss.synther.makeSynth("masterOut");
+
+		s.sync;
+
+		~ss.synther.makeSynth("masterFx");
 
 	}.fork;
 
 },
 
 )
-
 

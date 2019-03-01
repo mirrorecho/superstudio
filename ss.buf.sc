@@ -70,11 +70,11 @@ initModule: { | self |
 },
 
 loadLibrary: {arg self, libraryName;
-	var postMsgs = [], eLibrary = ();
+	var postMsgs = ["Loading buffers from '" ++ libraryName ++ "' library:"], eLibrary = ();
 	SoundFile.collectIntoBuffers(self.libraryPath ++ libraryName ++ "/*").do { arg buffer;
 		var bufferName = buffer.path.basename.splitext[0];
 		eLibrary[bufferName.asSymbol] = buffer;
-		postMsgs = postMsgs.add("Loaded buffer: ~ss.buf['" ++ libraryName ++ "']['" ++ bufferName ++ "']");
+		postMsgs = postMsgs.add("~ss.buf['" ++ libraryName ++ "']['" ++ bufferName ++ "']");
 	};
 	self.makeModule(libraryName, eLibrary);
 	~ss.postPretty(postMsgs);
