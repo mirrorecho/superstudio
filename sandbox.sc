@@ -37,7 +37,6 @@
 ~ss.synther.openAllLibraries;
 )
 // ---------------------------------------------------------
-
 (
 ~ss.buf.loadLibrary("echo");
 ~ss.synther.loadLibrary("synther.ringer");
@@ -54,12 +53,7 @@
 	mix:0.4,
 	rateScale:(0.25)
 ));
-)
-~ss.midi.synthName="echoBreath";
 
-
-// ---------------------------------------------------------
-(
 ~ss.sampler.makeDistortionSampler(
 	"sampleShamiI",[
 		[~ss.buf['shamisen']['I-B2'], 123.5],
@@ -81,8 +75,11 @@
 		[~ss.buf['shamisen']['I-F#4'], 370.0],
 ]);
 )
-
+// ---------------------------------------------------------
+~ss.midi.synthName="echoBreath";
 ~ss.midi.synthName = "sampleShamiI";
+~ss.midi.synthName = "rainpiano";
+~ss.midi.postNote = true;
 // ---------------------------------------------------------
 (
 ~ya = ~ss.arrange.makeWork("ya");
@@ -100,14 +97,15 @@
 
 ~ya.makeP("leafA", (
 	rhythm:[0.5, 1, 0.5, 2, 1],
-	notes:[-13, 6, 4, -9, 1],
+	notes:[-13, 6, 4, -9, \rest],
 	instrument:"sampleShamiI",
 	amp:Pwhite(0.4, 0.6),
 	distortion:Pwhite(0.4,0.8),
 	attackTime:Pwhite(0, 0.2),
 ));
 ~ya.leafA.makeCopy("leafB", (notes:[-13, 3, -8, 3, 4]));
-~ya.leafA.makeCopy("leafC", (notes:[-13, 4, -9, 4, 6]));
+~ya.leafA.makeCopy("leafC", (notes:[-13, 4, \rest, 4, \rest]));
+~ya.leafA.makeCopy("leafA2", (notes:[-13, 6, 4, -9, 6]));
 
 ~ya.makeP("echoBreathHi", (
 	bufnum:~ss.buf['echo']['nine-breath-1'],
@@ -125,16 +123,28 @@
 ~ya.echoBreathHi.makeCopy("echoBreathLo", (note:Prand([-3, 4, 11, 21, 18, 25, 32, 39]-12, inf)));
 ~ya.makeBlock("echoBreath", [~ya.echoBreathHi, ~ya.echoBreathLo]);
 
-~ya.makeSeq("leafABCA",[~ya.leafA, ~ya.leafB, ~ya.leafC, ~ya.leafA]);
+~ya.makeSeq("leafABCA",[~ya.leafA, ~ya.leafB, ~ya.leafC, ~ya.leafA2]);
 ~ya.makeSeq("lowdist", [~ya.lowdistI, ~ya.lowdistI, ~ya.lowdistII, ~ya.lowdistI]);
 ~ya.makeSeq("echos", ~ya.echoBreath!4);
 
 ~ya.makeBlock("leaves", [~ya.leafABCA, ~ya.lowdist, ~ya.echos]);
 
+~ya.makeP("hiPiano", (
+	instrument:"rainpiano",
+	notes:[27, 28, 35, 27, 28, 21],
+	amp:Pwhite(0.5, 0.6),
+	dur:Pshuf([0.5, 0.5, 1, 1, 2])
+));
+
+
 )
 ~ya.echoBreath.playMe;
+~ya.leafABCA.playMe;
+~ya.hiPiano.playMe;
 
-~ya.makeSeq("leaves2", ~ya.leaves!2).playMe;
+~ya.makeSeq("leaves2", ~ya.leaves!4).playMe;
+~ya.leafA.makeCopy("leafAShuf", (note:Pshuf(~ya.leafA.notes))).playMe;
+~ya.makeSeq("_", ~ya.leafAShuf!8).playMe;
 
 
 (
@@ -169,6 +179,9 @@
 
 ~ss.synther.loadLibrary("synther.ringMe");
 
+a = ();
+~ss.postln;
+
 // ---------------------------------------------------------
 (
 ~ringer.makeRinger("myTwinkle", (
@@ -193,12 +206,16 @@
 ));
 )
 
-
+// ---------------------------------------------------------
 ~ss.midi.synthName="ringMe";
 ~ss.midi.synthName="ringEven";
 ~ss.midi.synthName="ringOdd";
 ~ss.midi.synthName="myTwinkle";
 ~ss.midi.synthName="echoBreath";
+~ss.midi.synthName="sampleShamiI";
+~ss.midi.synthName="noiseHitI";
+~ss.midi.synthName="rainpiano";
+~ss.midi.postNote = true;
 // ---------------------------------------------------------
 
 ~sandbox.off.playMe;
@@ -213,6 +230,115 @@ MIDIClient.list;
 ~ss.buf['stringy']['D#3-mod-thin-vibrato'].play;
 ~ss.buf['stringy']['E3-violin-nice-decresc'].play;
 ~ss.buf['stringy']['A2-violin-basic-vibrato'].play;
+
+
+() / 480;
+90*8;
+7.factorial / 90;
+2*3*5*7*11*13 / 640;
+
+0.4!(2*3);
+1/0.667;
+
+
+(
+
+~ss.synther.loadLibrary("synther.noiseHits");
+
+
+~factor = ~ss.arrange.makeWork("factor");
+
+~factor.times = 7.factorial;
+
+~factor.clock.tempo = 640 / 60;
+
+~factor.makeP("f1", (
+	instrument:Prand(["noiseHitI", "rainpiano"], inf),
+	note:Prand([12,19,24], inf),
+	rhythm:1!96,
+	amp:Pstutter(7, Pwhite(0.1, 0.2)),
+	releaseTime:Pwhite(0.2, 0.9),
+	rq:0.5,
+));
+
+~factor.makeP("f2", (
+	instrument:"rainpiano",
+	note:Pseq([\rest, 0], inf),
+	rhythm:1!96,
+	amp:Pstutter(2*7, Pwhite(0.2, 0.36)),
+	releaseTime:Pwhite(0.3, 0.6),
+	distortion:Pstutter(2*3, Pwhite(0.2, 1)),
+));
+
+~factor.makeP("f3", (
+	instrument:"rainpiano",
+	note:Pseq([\rest, \rest, 12], inf),
+	rhythm:1!96,
+	amp:Pstutter(3*7, Pwhite(0.2, 0.4)),
+	decayTime:1,
+));
+
+~factor.makeP("f4", (
+	instrument:"rainpiano",
+	note:Pseq([\rest, \rest, \rest, -24], inf),
+	rhythm:1!96,
+	distortion:1,
+	amp:Pstutter(4*7, Pwhite(0.2, 0.6)),
+	decayTime:1,
+	curve:-22,
+));
+
+~factor.makeP("f5", (
+	instrument:"sampleShamiI",
+	note:Pseq([\rest, \rest, \rest, \rest, 7], inf),
+	rhythm:1!96,
+	amp:Pstutter(5*7, Pwhite(0.3, 0.6)),
+	decayTime:1,
+));
+
+~factor.makeP("f6", (
+	instrument:"rainpiano",
+	note:Pseq([\rest, \rest, \rest, \rest, \rest, 19], inf),
+	rhythm:1!96,
+	amp:Pstutter(6*7, Pwhite(0.1, 0.3)),
+	decayTime:1,
+));
+
+~factor.makeP("f7", (
+	instrument:"sampleShamiI",
+	note:Pseq([\rest, \rest, \rest, \rest, \rest, \rest, -5], inf),
+	rhythm:1!96,
+	amp:0.6,
+	decayTime:1,
+));
+
+// ~factor.makeP("f8", (
+// 	instrument:"sampleShamiI",
+// 	note:Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest, -12], inf),
+// 	rhythm:1!96,
+// 	distortion:1,
+// 	amp:0.8,
+// 	decayTime:1,
+// ));
+
+~factor.makeBlock("factors", [
+	~factor.f1,
+	~factor.f2,
+	~factor.f3,
+	~factor.f4,
+	~factor.f5,
+	~factor.f6,
+	~factor.f7,
+	// ~factor.f8,
+]
+);
+
+)
+~factor.factors.playMe;
+
+~factor.f2.playMe;
+
+
 
 
 (
@@ -235,6 +361,8 @@ MIDIClient.list;
 	],
 );
 )
+
+~ss.midi.synthName="meYo";
 
 
 
@@ -274,6 +402,25 @@ Synth("meYo", [freq:65.41, amp:0.8, distortion:1]);
 	]
 );
 )
+
+p = Pser([1,2,3,4,5]);
+p.list;
+
+e = (play:{"YOYO".postln;},);
+f = ().putAll(e);
+g = f.putAll((yo:"MAMA"))
+
+e.play;
+f.play;
+g.play;
+g.parentEvents;
+
+g.next;
+
+~ss.play;
+Event
+
+
 
 ~sandbox.wonder.playMe;
 ~sandbox.wonderHi.playMe;
