@@ -74,13 +74,199 @@
 		[~ss.buf['shamisen']['I-F#4'], 370.0],
 		[~ss.buf['shamisen']['I-F#4'], 370.0],
 ]);
+
+~ss.sampler.makeDistortionSampler(
+	"sampleShamiII",[
+		[~ss.buf['shamisen']['II-F#3'], 182.0], // = 185.0 flat
+		[~ss.buf['shamisen']['II-G3'], 196.0],
+		[~ss.buf['shamisen']['II-G#3'], 207.7],
+		[~ss.buf['shamisen']['II-A3'], 220.0],
+		[~ss.buf['shamisen']['II-B3'], 247.9],
+		[~ss.buf['shamisen']['II-C#4'], 277.2],
+		[~ss.buf['shamisen']['II-D4'], 293.7],
+		[~ss.buf['shamisen']['II-E4'], 329.6],
+		[~ss.buf['shamisen']['II-F#4'], 369.0],
+		[~ss.buf['shamisen']['II-G4'], 392.0],
+		[~ss.buf['shamisen']['II-G#4'], 420.0], // = 415.3 sharp
+		[~ss.buf['shamisen']['II-B4'], 500.8], // = 493.8 flat
+		[~ss.buf['shamisen']['II-C#5'], 554.4],
+
+]);
+~ss.sampler.makeDistortionSampler(
+	"meYo",
+	[
+		[~ss.buf['me-voice']['yo-E3'], 164.8],
+		[~ss.buf['me-voice']['yo-E3'], 164.8],
+		[~ss.buf['me-voice']['yo-Ab3'], 207.7],
+		[~ss.buf['me-voice']['yo-C4'], 261.6],
+		[~ss.buf['me-voice']['yo-C4'], 261.6],
+	],
+);
 )
 // ---------------------------------------------------------
-~ss.midi.synthName="echoBreath";
-~ss.midi.synthName = "sampleShamiI";
+~ss.midi.synthName = "echoBreath";
+~ss.midi.synthName = "meYo";
 ~ss.midi.synthName = "rainpiano";
+~ss.midi.synthName = "sampleShamiI";
+~ss.midi.synthName = "sampleShamiII";
+~ss.midi.synthName = "ssSawBass";
 ~ss.midi.postNote = true;
 // ---------------------------------------------------------
+[1,2,3,4]*[10,100,1000,10000];
+
+(
+
+SynthDef("ssSawBass", {arg amp=0.6, attackTime=0.04, decayTime=0.4, releaseTime=1.0,
+	freqSpread=1.002, freq=100, gate=1, out=~ss.bus.master;
+	var sig, env;
+	var freqSpreadSquared = freqSpread**2;
+
+	sig = [
+		Saw.ar([
+			freq * freqSpreadSquared,
+			freq / freqSpread,
+			freq * freqSpread,
+			freq / freqSpreadSquared,
+		])
+	];
+	sig = sig * (3 + LFNoise1.ar(16!4));
+
+	sig = Splay.ar(sig, Rand(0.44,0.88), spread:0.69) * AmpCompA.kr(freq,20);
+
+	sig = sig / 3;
+
+	sig = RLPF.ar(sig, freq*4, rq:1);
+
+	// sig = sig**4;
+
+	env = EnvGen.kr( Env.adsr(
+		attackTime:attackTime,
+		decayTime:decayTime,
+		sustainLevel:0.66,
+		peakLevel:amp**4,
+		releaseTime:releaseTime,
+		curve:-2,
+	), gate:gate, doneAction:2);
+
+	sig = sig * env;
+	Out.ar(out, sig);
+
+}).add;
+
+)
+1.124**2;
+
+(
+
+SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus.master;
+	var signal, signal1, signal2, b1, b2;
+	b1 =  [0, 0.01, 0.02, 0.04] + 1.92; // 1.9522665452781; // = 1.98 * 0.989999999 * cos(0.09);
+	b2 =  [0, 0.002, 0.004, 0.009] + 0.99 * -1; // -0.998057;
+	// t_trig.scope;
+	signal = K2A.ar(t_trig);
+	// signal.scope;
+	signal = SOS.ar(signal, 0.09, 0.0, 0.0, b1, b2);
+	signal = RHPF.ar(signal, freq, rq) + RHPF.ar(signal, freq/2, rq);
+	signal = Splay.ar(signal, 0.66);
+	// signal = Decay2.ar(signal, 0.4, 0.3) * signal;
+	signal = (signal**3) * (amp**4);
+	signal = signal * EnvGen.kr( Env.adsr(
+		attackTime:0.3, decayTime:0.3, curve:-4), gate:gate, doneAction:2) * amp;
+
+	Out.ar(out, signal);
+}).add;
+
+~rainVI = ~ss.arrange.makeWork("rainVI");
+~rainVI.clock.tempo = 144 / 60;
+~rainVI.makeP("pianoCycle1", (
+	instrument:"rainpiano",
+	note:Pseq([1, -1, -3], 4) + Prand([0,12,24], inf),
+	amp:Pwhite(0.3,0.4),
+	rhythm:0.5!32,
+	distortion:Pwhite(0.3, 0.6),
+	attackTime:Pwhite(0.1, 0.3),
+	releaseTime:Pwhite(0.6, 2),
+	curve:Pwhite(8,-8),
+));
+~rainVI.pianoCycle1.makeCopy("pianoCycle2", (
+	rhythm:0.5!16,
+));
+~rainVI.pianoCycle1.makeCopy("pianoCycleII2", (
+	note:Pseq([1, 2, -3], 4) + Prand([0,12,24], inf),
+	rhythm:0.5!16,
+));
+~rainVI.pianoCycle1.makeCopy("pianoCycle3", (
+	note:Pseq([1, -6, -3], 4) + Prand([0,12,24], inf),
+	rhythm:0.5!16,
+));
+~rainVI.pianoCycle1.makeCopy("pianoCycle4", (
+	note:Pseq([1, -6, -1], 4) + Prand([0,12,24], inf),
+));
+~rainVI.makeSeq("pianoCycleI", [
+	~rainVI.pianoCycle1,
+	~rainVI.pianoCycle2,
+	~rainVI.pianoCycle3,
+	~rainVI.pianoCycle4,
+]);
+~rainVI.makeSeq("pianoCycleII", [
+	~rainVI.pianoCycle1,
+	~rainVI.pianoCycleII2,
+	~rainVI.pianoCycle3,
+	~rainVI.pianoCycle4,
+]);
+
+~rainVI.makeP("bass1", (
+	instrument:"ssSawBass",
+	note:-20,
+	rhythm:[16],
+	amp:0.6,
+));
+~rainVI.bass1.makeCopy("bass2", (note:-18, rhythm:[8]));
+~rainVI.bass1.makeCopy("bass3", (note:-25, rhythm:[8]));
+~rainVI.bass1.makeCopy("bass4", (note:-28));
+~rainVI.makeSeq("bassCycle", [
+	~rainVI.bass1,
+	~rainVI.bass2,
+	~rainVI.bass3,
+	~rainVI.bass4,
+]);
+
+~rainVI.makeP("melodyI", (
+	instrument:"meYo",
+	rhythm:[6, 1.5, 1.5, 0.5, 2.5, 36],
+	note:Pseq([\rest, -3, -3, -3, -1, \rest], inf),
+	amp:0.6,
+));
+
+~rainVI.makeBlock("cycleBlockI", [
+	~rainVI.bassCycle,
+	~rainVI.pianoCycleI,
+	~rainVI.melodyI,
+]);
+~rainVI.makeBlock("cycleBlockII", [
+	~rainVI.bassCycle,
+	~rainVI.pianoCycleI,
+]);
+
+
+~rainVI.makeSeq("cycles", [
+	~rainVI.cycleBlockI,
+	~rainVI.cycleBlockII,
+]);
+
+
+
+
+)
+~rainVI.cycles.playMe;
+~rainVI.melodyI.playMe;
+
+~rainVI.cycleBlockI.playMe;
+
+~rainVI.pianoCycleI.playMe;
+~rainVI.pianoCycle1.playMe;
+
+
 (
 ~ya = ~ss.arrange.makeWork("ya");
 ~ya.clock.tempo = 80/60;

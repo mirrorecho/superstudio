@@ -16,7 +16,7 @@ initModule: { | self |
 			\freq, (midinote + rand(0.2) - 0.1).midicps,
 			\amp, vel.linlin(0, 127, 0.001, 1.1)
 		]);
-		if (self.postNote, {("NOTE: " ++ (midinote-60) ++ ", MIDI: " ++ midinote).postln;});
+		if (self.postNote, {("NOTE: " ++ (midinote-60) ++ ", MIDI: " ++ midinote ++ ", FREQ: " ++ midinote.midicps).postln;});
 	}
 	);
 
