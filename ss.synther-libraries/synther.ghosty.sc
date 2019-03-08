@@ -12,7 +12,7 @@
 	),
 
 	makeMoan: { arg self, name, eArgs=();
-		var myArgs = ().putAll(self.eMoanDefaultArgs).putAll(eArgs);
+		var myArgs = self.eMoanDefaultArgs ++ eArgs;
 
 		SynthDef(name, { arg out=~ss.bus.master, amp=0.2, gate=1, freq=440;
 			var sig, env;

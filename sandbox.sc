@@ -37,6 +37,24 @@
 ~ss.synther.openAllLibraries;
 )
 // ---------------------------------------------------------
+
+(
+~ya = ~ss.makeModule("ya");
+~ya.makeModule("ya1");
+~ya.makeModule("ya2");
+~ya.makeModule("ya3");
+
+~ya.makeModuleList("yas", [
+	~ya.ya1;
+	~ya.ya2;
+	~ya.ya3;
+]);
+)
+~ya.yas.ya3.foo="BAR";
+~ya.yas.ya3.foo;
+~ya.ya3.foo;
+
+
 (
 ~ss.buf.loadLibrary("echo");
 ~ss.synther.loadLibrary("synther.ringer");
@@ -258,6 +276,22 @@ SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus
 
 
 )
+
+(
+r = ~rainVI.makeSeq("rr", [
+	~rainVI.pianoCycle1,
+	~rainVI.pianoCycleII2,
+	~rainVI.pianoCycle3,
+	~rainVI.pianoCycle4,
+]);
+
+)
+r.listSize;
+
+
+~rainVI.pianoCycleII.list;
+
+
 ~rainVI.cycles.playMe;
 ~rainVI.melodyI.playMe;
 

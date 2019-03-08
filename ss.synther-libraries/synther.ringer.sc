@@ -21,7 +21,7 @@
 
 	// factory function for synthdef based on bank of resonators using buffer as input and percussive env.
 	makeRinger:{ arg self, name, eArgs=(); // args: bufnum, env, overtones, overtoneAmps, ringTimes, out
-		var myArgs = ().putAll(self.eDefaultArgs).putAll(eArgs);
+		var myArgs = self.eDefaultArgs ++ eArgs;
 
 		SynthDef(name, {
 			arg amp=1, freq=440;

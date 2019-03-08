@@ -4,41 +4,39 @@ var ssPath = "".resolveRelative;
 
 // DEFINES protoModule as an event with standard methods for any super studio module
 var protoModule = (
-	name: "YO?",
+	name: "aModule",
 	title: "A super studio module",
 	path: ssPath,
 	initModule: { | self | }, // hook for function to initialize module
 
-	getCopy: { arg self, name, eValues=();
-		var myCopy = ().putAll(self).putAll(eValues);
-		if (name!=nil, {myCopy.name=name;});
-		myCopy;
-	},
-
 	makeCopy: { arg self, name, eValues=();
-		var myModule = self.getCopy(name, eValues);
+		var myModule = self ++ eValues;
+		myModule.name = name;
 		self.parent[name.asSymbol] = myModule;
 		myModule;
 	},
 
-	getModule: { arg self, name, eValues=();
-		var myModule = ~ss.protoModule.getCopy(name).putAll(eValues);
+	getModule: { arg self, eValues=();
+		var myModule = ~ss.protoModule ++ eValues;
 		myModule.parent = self;
-		myModule.name=name;
 		myModule.initModule.value;
 		myModule;
 	},
 
 	makeModule: { arg self, name, eValues=();
-		self[name.asSymbol] = self.getModule(name, eValues);
+		self[name.asSymbol] = self.getModule(eValues);
+		self[name.asSymbol].name = name;
 		self[name.asSymbol];
 	},
 
-	getModuleList: { arg self, name, list=[], eValues=();
-		var myModule = self.getModule(name, eValues);
+	getModuleList: { arg self, list=[], eValues=();
+		var myModule = self.getModule(eValues);
+
 		myModule.listSize = list.size;
+
 		myModule.nameList = list.size.collect{|i| list[i].name.asSymbol;};
-		list.do{|e| myModule[e.name.asSymbol] = e;};
+
+		list.do{|e| myModule[e.name.asSymbol] = e.copy;};
 
 		myModule.byIndex = {arg myModule, index;
 			myModule[myModule.nameList[index]];
@@ -46,23 +44,23 @@ var protoModule = (
 
 		myModule.list = {arg myModule; myModule.listSize.collect{|i| myModule.byIndex(i);}};
 
-		myModule.getCopy = { arg myModule, name, eListValues=(), eValues=();
-			var myCopy = ().putAll(myModule).putAll(eValues);
-			if (name!=nil, {myCopy.name=name;});
+		myModule.getCopy = { arg myModule, eListValues=(), eValues=();
+			var myCopy = myModule ++ eValues;
 			myCopy.list.do{|e|
-				myCopy[e.name.asSymbol] = myCopy[e.name.asSymbol].getCopy(e.name, eListValues[e.name.asSymbol])
+				myCopy[e.name.asSymbol] = myCopy[e.name.asSymbol] ++ eListValues[e.name.asSymbol];
 			};
 			myCopy;
 		};
 
 		myModule.makeCopy = {  arg myModule, name, eListValues=(), eValues=();
-			self.parent[name.asSymbol] = myModule.getCopy(name, eListValues=(), eValues=());
+			self.parent[name.asSymbol] = myModule.getCopy(eListValues=(), eValues=());
 		};
 		myModule;
 	},
 
 	makeModuleList: { arg self, name, list=[], eValues=();
-		self[name.asSymbol] = self.getModuleList(name, list, eValues);
+		self[name.asSymbol] = self.getModuleList(list, eValues);
+		self[name.asSymbol].name = name;
 		self[name.asSymbol];
 	},
 
@@ -104,7 +102,9 @@ var protoModule = (
 );
 
 
-~ss = protoModule.getCopy("ss", (
+~ss = protoModule ++ (
+
+	name: "ss",
 
 	protoModule: protoModule,
 
@@ -154,8 +154,6 @@ var protoModule = (
 		"----------------------------------".postln;
 		msgs.do {arg msg; msg.postln; };
 	},
-
-)
 
 );
 
