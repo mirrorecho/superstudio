@@ -37,7 +37,7 @@ makeWork: {arg self, workName, eWorkInit=();
 		) ++ eValues);
 	};
 
-	myW.getBlock = {arg myW, list=[], eValues=();
+	myW.getPar = {arg myW, list=[], eValues=();
 		myW.getModuleList(list, myW.protoP ++ (
 			patternType:Ppar,
 			bind:{arg myB, eValues=();
@@ -49,7 +49,18 @@ makeWork: {arg self, workName, eWorkInit=();
 	};
 
 	myW.getSeq = {arg myW, list=[], eValues=();
-		myW.getBlock(list, eValues) ++ (patternType:Pseq);
+		myW.getPar(list, (patternType:Pseq) ++ eValues);
+	};
+
+	myW.getFadeIn = {arg myW, fadeP, eValues=(fadeTime:2);
+		myW.getModule(myW.protoP ++ (
+			patternType:PfadeIn,
+			bind:{arg myB, eBindValues=(); myB.patternType.new(fadeP.bind(eBindValues), myB.fadeTime);},
+		) ++ eValues);
+	};
+
+	myW.getFadeOut = {arg myW, fadeP, eValues=(fadeTime:2);
+		myW.getFadeIn(fadeP, (patternType:PfadeOut) ++ eValues);
 	};
 
 	// for making modules underneath the work....
@@ -62,18 +73,26 @@ makeWork: {arg self, workName, eWorkInit=();
 		myW.makeModule(name, myW.getMonoP(eValues));
 	};
 
-	myW.makeBlock = {arg myW, name, list, eValues=();
-		myW.makeModule(name, myW.getBlock(list, eValues));
+	myW.makePar = {arg myW, name, list, eValues=();
+		myW.makeModule(name, myW.getPar(list, eValues));
 	};
 
 	myW.makeSeq = {arg myW, name, list, eValues=();
 		myW.makeModule(name, myW.getSeq(list, eValues));
 	};
 
+	myW.makeFadeIn = {arg myW, name, fadeP, eValues=(fadeTime:2);
+		myW.makeModule(name, myW.getFadeIn(fadeP, eValues));
+	};
+
+	myW.makeFadeOut = {arg myW, name, fadeP, eValues=(fadeTime:2);
+		myW.makeModule(name, myW.getFadeOut(fadeP, eValues));
+	};
 
 	myW;
 
 },
 )
+
 
 

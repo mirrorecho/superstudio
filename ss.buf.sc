@@ -33,25 +33,37 @@ initModule: { | self |
 	}).add;
 
 
+	// NOTE: this implementation based delays causes amp to increase slightly after synth starts...
+	/// .. and sounds different at beginning before overlap starts ... rethink?
 	SynthDef("bufDrone",{
 		arg bufnum, amp=1.0, rate=1.0, out=~ss.bus.master,
+
 		// TO DO: implement these:
-		startOn=0, endOn=3,
 		fadeIn=0.1, sustain=1.0, fadeOut=0.1;
 
-		var length = endOn - startOn;
-		var mul = amp; // could do adjustments here...
+		var sigs, envs, sig;
+		var length = BufDur.ir(bufnum);
 
-		var myPlayBuf = PlayBuf.ar(
-			numChannels:2,
-			bufnum:bufnum,
-			rate:BufRateScale.kr(bufnum)*rate,
-			loop:1) * EnvGen.ar(Env.circle([0,1,0], [length/(2*rate), length/(2*rate), 0]));
-		Out.ar(out,
-			// dividing by rate is important to adjust circle to any possible rate...
-			DelayN.ar(myPlayBuf, length/(2*rate), length/(2*rate), 1, myPlayBuf)
-			* mul
-			,0.0);
+
+		sigs = 4.collect{ |i|
+			PlayBuf.ar(
+				numChannels:2,
+				bufnum:bufnum,
+				rate:BufRateScale.ir(bufnum)*rate,
+				startPos:BufSampleRate.ir(bufnum) * length * i/4,
+				loop:1);
+		};
+
+		envs = [
+			EnvGen.kr(Env.new(levels: [0, 0.25, 0.5, 0.25, 0], times: (length/4)!3, curve: [6,-6,6,-6,]).circle),
+			EnvGen.kr(Env.new(levels: [0.25, 0.5, 0.25, 0, 0.25], times: (length/4)!3, curve: [-6,6,-6,6]).circle),
+			EnvGen.kr(Env.new(levels: [0.5, 0.25, 0, 0.25, 0.5], times: (length/4)!3, curve: [6,-6,6,-6]).circle),
+			EnvGen.kr(Env.new(levels: [0.25, 0, 0.25, 0.5, 0.25], times: (length/4)!3, curve: [-6,6,-6, 6,]).circle),
+		];
+		sigs = sigs * envs;
+		Out.ar(out, Mix.ar(sigs));
+
+		// Out.ar(out, Mix.ar(sigs));
 	}).add;
 
 	SynthDef("bufSwell", {
@@ -97,6 +109,10 @@ perc: { arg self, libraryName, bufferName, args=[];
 },
 
 
-
 )
+
+
+
+
+
 

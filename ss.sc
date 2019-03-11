@@ -9,6 +9,11 @@ var protoModule = (
 	path: ssPath,
 	initModule: { | self | }, // hook for function to initialize module
 
+	// really only needed as a hook
+	getCopy: { arg self, eValues=();
+		self ++ eValues;
+	},
+
 	makeCopy: { arg self, name, eValues=();
 		var myModule = self ++ eValues;
 		myModule.name = name;
@@ -46,14 +51,17 @@ var protoModule = (
 
 		myModule.getCopy = { arg myModule, eListValues=(), eValues=();
 			var myCopy = myModule ++ eValues;
-			myCopy.list.do{|e|
-				myCopy[e.name.asSymbol] = myCopy[e.name.asSymbol] ++ eListValues[e.name.asSymbol];
+
+			// make a copy of all children:
+			myCopy.nameList.do{|n|
+				myCopy[n] = myCopy[n].getCopy(eListValues[n] ? ());
 			};
+
 			myCopy;
 		};
 
 		myModule.makeCopy = {  arg myModule, name, eListValues=(), eValues=();
-			self.parent[name.asSymbol] = myModule.getCopy(eListValues=(), eValues=());
+			self.parent[name.asSymbol] = myModule.getCopy(eListValues, eValues);
 		};
 		myModule;
 	},
@@ -99,6 +107,9 @@ var protoModule = (
 		(self.path ++ self.name ++ ".*.sc").pathMatch;
 	},
 
+	postMe: { arg self;
+		~ss.postPretty(self.collect{|val, key| key.asString ++ ": " ++ val.asString;});
+	},
 );
 
 

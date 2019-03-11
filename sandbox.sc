@@ -32,27 +32,56 @@
 });
 )
 // ---------------------------------------------------------
+
 (
 ~ss.openAll;
 ~ss.synther.openAllLibraries;
 )
 // ---------------------------------------------------------
 
-(
-~ya = ~ss.makeModule("ya");
-~ya.makeModule("ya1");
-~ya.makeModule("ya2");
-~ya.makeModule("ya3");
+~ss.buf.drone("stringy", "D#3-mod-thin-vibrato");
 
-~ya.makeModuleList("yas", [
-	~ya.ya1;
-	~ya.ya2;
-	~ya.ya3;
+a = 3.979;
+b = 3.collect{ |i| (i+1)*a/8; };
+Env(levels: [0.5, 0.25, 0, 0.25, 0.5], times: b, curve: [6,-6,6,-6]).circle.plot;
+
+
+
+
+("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
+(
+~ss.makeModule("aTest");
+~ss.makeModule("bTest");
+
+~ss.makeModuleList("test", [
+	~ss.aTest,
+	~ss.bTest,
 ]);
+
+~ss.test.getCopy;
 )
-~ya.yas.ya3.foo="BAR";
-~ya.yas.ya3.foo;
-~ya.ya3.foo;
+
+~ss.test.getCopy;
+
+
+~ss.test.postMe;
+
+(0.9**4)!4;
+
+e = ();
+e["foo"];
+
+() ++ e;
+() ++ e["foo"];
+
+((a:3) ? ())
+
+(a:1) | nil;
+
+e = ~ss.buf['japan-cicadas'].postMe;
+
+
+Set(a:4) | Set(a:4, b:6);
 
 
 (
@@ -171,10 +200,7 @@ SynthDef("ssSawBass", {arg amp=0.6, attackTime=0.04, decayTime=0.4, releaseTime=
 
 }).add;
 
-)
-1.124**2;
 
-(
 
 SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus.master;
 	var signal, signal1, signal2, b1, b2;
@@ -200,22 +226,22 @@ SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus
 	instrument:"rainpiano",
 	note:Pseq([1, -1, -3], 4) + Prand([0,12,24], inf),
 	amp:Pwhite(0.3,0.4),
-	rhythm:0.5!32,
+	dur:Pseq(0.5!32),
 	distortion:Pwhite(0.3, 0.6),
 	attackTime:Pwhite(0.1, 0.3),
 	releaseTime:Pwhite(0.6, 2),
 	curve:Pwhite(8,-8),
 ));
 ~rainVI.pianoCycle1.makeCopy("pianoCycle2", (
-	rhythm:0.5!16,
+	dur:Pseq(0.5!16),
 ));
 ~rainVI.pianoCycle1.makeCopy("pianoCycleII2", (
 	note:Pseq([1, 2, -3], 4) + Prand([0,12,24], inf),
-	rhythm:0.5!16,
+	dur:Pseq(0.5!16),
 ));
 ~rainVI.pianoCycle1.makeCopy("pianoCycle3", (
 	note:Pseq([1, -6, -3], 4) + Prand([0,12,24], inf),
-	rhythm:0.5!16,
+	dur:Pseq(0.5!16),
 ));
 ~rainVI.pianoCycle1.makeCopy("pianoCycle4", (
 	note:Pseq([1, -6, -1], 4) + Prand([0,12,24], inf),
@@ -236,11 +262,11 @@ SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus
 ~rainVI.makeP("bass1", (
 	instrument:"ssSawBass",
 	note:-20,
-	rhythm:[16],
+	dur:Pseq([16]),
 	amp:0.6,
 ));
-~rainVI.bass1.makeCopy("bass2", (note:-18, rhythm:[8]));
-~rainVI.bass1.makeCopy("bass3", (note:-25, rhythm:[8]));
+~rainVI.bass1.makeCopy("bass2", (note:-18, dur:Pseq([8]) ));
+~rainVI.bass1.makeCopy("bass3", (note:-25, dur:Pseq([8]) ));
 ~rainVI.bass1.makeCopy("bass4", (note:-28));
 ~rainVI.makeSeq("bassCycle", [
 	~rainVI.bass1,
@@ -251,7 +277,7 @@ SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus
 
 ~rainVI.makeP("melodyI", (
 	instrument:"meYo",
-	rhythm:[6, 1.5, 1.5, 0.5, 2.5, 36],
+	dur:Pseq([6, 1.5, 1.5, 0.5, 2.5, 36]),
 	note:Pseq([\rest, -3, -3, -3, -1, \rest], inf),
 	amp:0.6,
 ));
@@ -277,19 +303,7 @@ SynthDef("ssBass", {arg amp=1, t_trig=1, freq=100, rq=0.004, gate=1, out=~ss.bus
 
 )
 
-(
-r = ~rainVI.makeSeq("rr", [
-	~rainVI.pianoCycle1,
-	~rainVI.pianoCycleII2,
-	~rainVI.pianoCycle3,
-	~rainVI.pianoCycle4,
-]);
-
-)
-r.listSize;
-
-
-~rainVI.pianoCycleII.list;
+~rainVI.pianoCycleI.list;
 
 
 ~rainVI.cycles.playMe;
@@ -301,77 +315,12 @@ r.listSize;
 ~rainVI.pianoCycle1.playMe;
 
 
-(
-~ya = ~ss.arrange.makeWork("ya");
-~ya.clock.tempo = 80/60;
-
-~ya.makeP("lowdistI", (
-	instrument:"rainpiano",
-	notes:[\rest, -25],
-	rhythm:[1, 4],
-	amp:Pwhite(0.3, 0.4),
-	distortion:Pwhite(0.8, 0.9),
-	// curve:-4;
-));
-~ya.lowdistI.makeCopy("lowdistII", (notes:[\rest, -27]));
-
-~ya.makeP("leafA", (
-	rhythm:[0.5, 1, 0.5, 2, 1],
-	notes:[-13, 6, 4, -9, \rest],
-	instrument:"sampleShamiI",
-	amp:Pwhite(0.4, 0.6),
-	distortion:Pwhite(0.4,0.8),
-	attackTime:Pwhite(0, 0.2),
-));
-~ya.leafA.makeCopy("leafB", (notes:[-13, 3, -8, 3, 4]));
-~ya.leafA.makeCopy("leafC", (notes:[-13, 4, \rest, 4, \rest]));
-~ya.leafA.makeCopy("leafA2", (notes:[-13, 6, 4, -9, 6]));
-
-~ya.makeP("echoBreathHi", (
-	bufnum:~ss.buf['echo']['nine-breath-1'],
-	instrument:"echoBreath",
-	note:Prand([-3, 4, 11, 21, 18, 25, 32, 39], inf),
-	amp:Pwhite(0.02, 0.1),
-	rhythm:0.25!20,
-	attackTime:Pwhite(0.01, 0.2),
-	releaseTime:Pwhite(0.5, 1),
-	randStart:0.1,
-	mix:0.2,
-	curve:-8,
-	rateScale:0.5,
-));
-~ya.echoBreathHi.makeCopy("echoBreathLo", (note:Prand([-3, 4, 11, 21, 18, 25, 32, 39]-12, inf)));
-~ya.makeBlock("echoBreath", [~ya.echoBreathHi, ~ya.echoBreathLo]);
-
-~ya.makeSeq("leafABCA",[~ya.leafA, ~ya.leafB, ~ya.leafC, ~ya.leafA2]);
-~ya.makeSeq("lowdist", [~ya.lowdistI, ~ya.lowdistI, ~ya.lowdistII, ~ya.lowdistI]);
-~ya.makeSeq("echos", ~ya.echoBreath!4);
-
-~ya.makeBlock("leaves", [~ya.leafABCA, ~ya.lowdist, ~ya.echos]);
-
-~ya.makeP("hiPiano", (
-	instrument:"rainpiano",
-	notes:[27, 28, 35, 27, 28, 21],
-	amp:Pwhite(0.5, 0.6),
-	dur:Pshuf([0.5, 0.5, 1, 1, 2])
-));
-
-
-)
-~ya.echoBreath.playMe;
-~ya.leafABCA.playMe;
-~ya.hiPiano.playMe;
-
-~ya.makeSeq("leaves2", ~ya.leaves!4).playMe;
-~ya.leafA.makeCopy("leafAShuf", (note:Pshuf(~ya.leafA.notes))).playMe;
-~ya.makeSeq("_", ~ya.leafAShuf!8).playMe;
-
 
 (
 ~sandbox.makeP("offdrop1", (
 	instrument:"rainpiano",
-	notes:[0,-5,-5,0,-7,-7,-2,-5],
-	rhythm:[0.5,1,1,1,1,1,1,1.5],
+	note:Pseq([0,-5,-5,0,-7,-7,-2,-5]),
+	dur:Pseq([0.5,1,1,1,1,1,1,1.5]),
 	amp:Pseq([\rest, 0.4, 0.37, 0.35, 0.33, 0.3, 0.25, 0.2 ]) * Pwhite(1,1.1),
 	distortion:Pseq([0.05,0.1,0.2,0.25,0.3,0.35,0.4,0.45]*2) * Pwhite(1.5,2),
 	attackTime:Pwhite(0.02,0.06),
@@ -381,7 +330,7 @@ r.listSize;
 ~sandbox.makeP("offdrop2", (
 	instrument:"rainpiano",
 	note:Pseq([-29],inf),
-	rhythm:4!2,
+	dur:Pseq(4!2),
 	amp:Pseq([0.5,0.3],inf),
 	distortion:Pseq([1,0],inf),
 	curve:4,
@@ -404,7 +353,7 @@ a = ();
 
 // ---------------------------------------------------------
 (
-~ringer.makeRinger("myTwinkle", (
+~ss.synther.ringer.makeRinger("myTwinkle", (
 	bufnum:~ss.buf['japan-cicadas']['0185-insects-water-kyoto'],
 	overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3],
 	releaseTime:4.0,
@@ -414,7 +363,7 @@ a = ();
 	rateScale:(1/2)
 ));
 
-~ringer.makeRinger("echoBreath", (
+~ss.synther.ringer.makeRinger("echoBreath", (
 	bufnum:~ss.buf['echo']['nine-breath-1'],
 	overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
 	releaseTime:2.0,
@@ -475,7 +424,7 @@ MIDIClient.list;
 ~factor.makeP("f1", (
 	instrument:Prand(["noiseHitI", "rainpiano"], inf),
 	note:Prand([12,19,24], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	amp:Pstutter(7, Pwhite(0.1, 0.2)),
 	releaseTime:Pwhite(0.2, 0.9),
 	rq:0.5,
@@ -484,7 +433,7 @@ MIDIClient.list;
 ~factor.makeP("f2", (
 	instrument:"rainpiano",
 	note:Pseq([\rest, 0], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	amp:Pstutter(2*7, Pwhite(0.2, 0.36)),
 	releaseTime:Pwhite(0.3, 0.6),
 	distortion:Pstutter(2*3, Pwhite(0.2, 1)),
@@ -493,7 +442,7 @@ MIDIClient.list;
 ~factor.makeP("f3", (
 	instrument:"rainpiano",
 	note:Pseq([\rest, \rest, 12], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	amp:Pstutter(3*7, Pwhite(0.2, 0.4)),
 	decayTime:1,
 ));
@@ -501,7 +450,7 @@ MIDIClient.list;
 ~factor.makeP("f4", (
 	instrument:"rainpiano",
 	note:Pseq([\rest, \rest, \rest, -24], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	distortion:1,
 	amp:Pstutter(4*7, Pwhite(0.2, 0.6)),
 	decayTime:1,
@@ -511,7 +460,7 @@ MIDIClient.list;
 ~factor.makeP("f5", (
 	instrument:"sampleShamiI",
 	note:Pseq([\rest, \rest, \rest, \rest, 7], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	amp:Pstutter(5*7, Pwhite(0.3, 0.6)),
 	decayTime:1,
 ));
@@ -519,7 +468,7 @@ MIDIClient.list;
 ~factor.makeP("f6", (
 	instrument:"rainpiano",
 	note:Pseq([\rest, \rest, \rest, \rest, \rest, 19], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	amp:Pstutter(6*7, Pwhite(0.1, 0.3)),
 	decayTime:1,
 ));
@@ -527,7 +476,7 @@ MIDIClient.list;
 ~factor.makeP("f7", (
 	instrument:"sampleShamiI",
 	note:Pseq([\rest, \rest, \rest, \rest, \rest, \rest, -5], inf),
-	rhythm:1!96,
+	dur:Pseq(1!96),
 	amp:0.6,
 	decayTime:1,
 ));
@@ -535,7 +484,7 @@ MIDIClient.list;
 // ~factor.makeP("f8", (
 // 	instrument:"sampleShamiI",
 // 	note:Pseq([\rest, \rest, \rest, \rest, \rest, \rest, \rest, -12], inf),
-// 	rhythm:1!96,
+// 	dur:Pseq(1!96),
 // 	distortion:1,
 // 	amp:0.8,
 // 	decayTime:1,
@@ -596,7 +545,7 @@ Synth("meYo", [freq:65.41, amp:0.8, distortion:1]);
 	instrument:"sampleShamiI",
 	// note:Prand([[-8,0],[-7,-5],-5,-3,-2,[0,2], \rest, \rest, \rest], inf),
 	note:Prand([-13,-10,-8, \rest], inf),
-	rhythm:0.5!32,
+	dur:Pseq(0.5!32),
 	amp:Pwhite(0.4,0.5),
 	distortion:Pwhite(0, 0.4),
 	attackTime:Pwhite(0, 0.2),
@@ -607,8 +556,8 @@ Synth("meYo", [freq:65.41, amp:0.8, distortion:1]);
 (
 ~sandbox.makeP("wonderHi", (
 	instrument:"flutys",
-	notes:[[0,2,5,7]],
-	rhythm:[16],
+	note:[0,2,5,7],
+	dur:Pseq([16]),
 	// amp:Pwhite(0.4,0.5),
 	// distortion:Pwhite(0, 0.9),
 	// out:~ss.bus.master,
