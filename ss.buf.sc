@@ -36,13 +36,13 @@ initModule: { | self |
 	// NOTE: this implementation based delays causes amp to increase slightly after synth starts...
 	/// .. and sounds different at beginning before overlap starts ... rethink?
 	SynthDef("bufDrone",{
-		arg bufnum, amp=1.0, rate=1.0, out=~ss.bus.master,
-
-		// TO DO: implement these:
-		fadeIn=0.1, sustain=1.0, fadeOut=0.1;
+		arg bufnum, amp=1.0, rate=1.0, gate=1,
+		attackTime=0.1, decayTime=0.2, sustainLevel=1, releaseTime=1, curve= -4,
+		out=~ss.bus.master;
 
 		var sigs, envs, sig;
 		var length = BufDur.ir(bufnum);
+		var envTimes = (length / rate / 4)!3;
 
 
 		sigs = 4.collect{ |i|
@@ -55,15 +55,20 @@ initModule: { | self |
 		};
 
 		envs = [
-			EnvGen.kr(Env.new(levels: [0, 0.25, 0.5, 0.25, 0], times: (length/4)!3, curve: [6,-6,6,-6,]).circle),
-			EnvGen.kr(Env.new(levels: [0.25, 0.5, 0.25, 0, 0.25], times: (length/4)!3, curve: [-6,6,-6,6]).circle),
-			EnvGen.kr(Env.new(levels: [0.5, 0.25, 0, 0.25, 0.5], times: (length/4)!3, curve: [6,-6,6,-6]).circle),
-			EnvGen.kr(Env.new(levels: [0.25, 0, 0.25, 0.5, 0.25], times: (length/4)!3, curve: [-6,6,-6, 6,]).circle),
+			EnvGen.kr(Env.new(levels: [0, 0.25, 0.5, 0.25, 0], times: envTimes, curve: [6,-6,6,-6,]).circle),
+			EnvGen.kr(Env.new(levels: [0.25, 0.5, 0.25, 0, 0.25], times: envTimes, curve: [-6,6,-6,6]).circle),
+			EnvGen.kr(Env.new(levels: [0.5, 0.25, 0, 0.25, 0.5], times: envTimes, curve: [6,-6,6,-6]).circle),
+			EnvGen.kr(Env.new(levels: [0.25, 0, 0.25, 0.5, 0.25], times: envTimes, curve: [-6,6,-6, 6,]).circle),
 		];
 		sigs = sigs * envs;
-		Out.ar(out, Mix.ar(sigs));
 
-		// Out.ar(out, Mix.ar(sigs));
+		sig = Mix.ar(sigs) * EnvGen.kr(
+			Env.adsr(attackTime, decayTime, sustainLevel, releaseTime, peakLevel:amp, curve:curve,
+			),
+			gate:gate, doneAction:2);
+
+		Out.ar(out, sig);
+
 	}).add;
 
 	SynthDef("bufSwell", {
@@ -81,7 +86,9 @@ initModule: { | self |
 
 },
 
-loadLibrary: {arg self, libraryName;
+
+
+loadLibrary: {arg self, libraryName, files=[]; // if empty arry for files, then will load all in the dir
 	var postMsgs = ["Loading buffers from '" ++ libraryName ++ "' library:"], eLibrary = ();
 	SoundFile.collectIntoBuffers(self.libraryPath ++ libraryName ++ "/*").do { arg buffer;
 		var bufferName = buffer.path.basename.splitext[0];

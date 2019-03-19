@@ -3,6 +3,28 @@
 title: "Sample utilities",
 
 initModule: { arg self;
+	self.makeModule("makers");
+	self.makeModule("sampleData");
+	// TO DO/CONSIDER add ability to search multiple paths (for work-specific makers/synths)
+	self.sampleDataPath = ~ss.path ++ "ss.sampler-sampleData/sampleData.";
+	self.makersPath = ~ss.path ++ "ss.sampler-makers/sampler.";
+
+	// NOTE: the line below would NOT work because sampler module not yet added to ~ss
+	// self.makeSamplerSynth("sampleDistortionPiano", "distortion", "pianoI");
+},
+
+makeSamplerSynth: {
+	arg self, name, makerName, sampleDataName;
+	var maker;
+	self.makers[makerName.asSymbol] ? self.loadMaker(makerName);
+	self.sampleData[sampleDataName.asSymbol] ? self.loadSampleData(sampleDataName);
+
+	// NOTE:
+	// self.makers[makerName.asSymbol](arg1, arg2 ... syntax throws exception
+	/// meanwhile using value changes arg behavior for the function (WHY???)... as in:
+	// self.makers[makerName.asSymbol].value(arg1, arg2
+	// unless argument names explicitly passed
+	self.makers[makerName.asSymbol].value(self:self.makers, name:name, sampleData:self.sampleData[sampleDataName.asSymbol]);
 },
 
 makeSamplerModule: {
@@ -32,7 +54,7 @@ makeSamplerModule: {
 
 },
 
-
+// basic no frills sampler
 makeSampler: {
 
 	arg self, name, sampleData;
@@ -62,110 +84,25 @@ makeSampler: {
 	myS;
 },
 
+loadMaker: { arg self, makerName;
+	(self.makersPath ++ makerName ++ ".sc").load;
+	~ss.postPretty(["Loaded sampler maker: '" ++ makerName ++ "'"]);
+},
 
-makeStereoFloatSampler: {
-
-	arg self, name, sampleData;
-	var myS = self.makeSamplerModule(name, sampleData);
-
-	SynthDef(name, {
-		arg amp=1.0, start=0, freq=440, out=~ss.bus.master;
-		var mySample, buffer, buffer_freq, rate, panFreqRange=1.01, sig;
-
-		mySample = myS.getSample(freq);
-		buffer = mySample[0];
-		buffer_freq=mySample[1];
-
-
-
-		rate = freq / buffer_freq;
-		sig = PlayBuf.ar(1,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*[rate*panFreqRange, rate/panFreqRange],
-			startPos:BufSampleRate.kr(buffer) * start,
-			doneAction:2,
-		);
-		sig = sig * amp;
-
-		Out.ar(out, sig);
-
-	}).add;
-
-	myS;
+loadSampleData: { arg self, sampleDataName;
+	(self.sampleDataPath ++ sampleDataName ++ ".sc").load;
+	~ss.postPretty(["Loaded sample data: '" ++ sampleDataName ++ "'"]);
 },
 
 
-makePercSampler: {
-
-	arg self, name, sampleData;
-	var myS = self.makeSamplerModule(name, sampleData);
-
-	SynthDef(name, {
-		arg amp=1.0, start=0, freq=440, attackTime=0.01, releaseTime=2, curve= -4, out=~ss.bus.master;
-		var mySample, buffer, buffer_freq, rate, sig, env;
-
-		mySample = myS.getSample(freq);
-		buffer = mySample[0];
-		buffer_freq=mySample[1];
-
-		rate = freq / buffer_freq;
-		sig = PlayBuf.ar(2,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*rate,
-			startPos:BufSampleRate.kr(buffer) * start,
-			doneAction:2,
-		);
-		sig = sig * amp;
-
-		env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
-		sig = sig * EnvGen.ar(env, doneAction: 2);
-
-		Out.ar(out, sig);
-
-	}).add;
-
-	myS;
+// TO CONSIDER: imlementing something like this...
+/*openAllLibraries: { arg self;
+	self.libraryPaths.do{|p|p.openDocument;};
 },
 
-
-makeDistortionSampler: {
-
-	arg self, name, sampleData;
-	var myS = self.makeSamplerModule(name, sampleData);
-
-	SynthDef(name, {
-		arg amp=1.0, start=0, freq=440, attackTime=0.001, releaseTime=4, curve= -1, distortion=0,
-		out=~ss.bus.master;
-		var mySample, buffer, buffer_freq, rate, sig, env, lpf_freq, lpf_attempt_freq, lpf_cutoff_freq,
-		sig_distort;
-
-		mySample = myS.getSample(freq);
-		buffer = mySample[0];
-		buffer_freq=mySample[1];
-		lpf_cutoff_freq = 20000;
-
-		rate = freq / buffer_freq;
-		sig = PlayBuf.ar(2,
-			bufnum:buffer,
-			rate:BufRateScale.kr(buffer)*rate,
-			startPos:BufSampleRate.kr(buffer) * start,
-			doneAction:2,
-		);
-
-		sig_distort = (sig * (3 + (distortion * 40))).distort * (1-(distortion/1.4)) * 0.4;
-		sig = (sig * (1-distortion)) + (sig_distort * distortion);
-		env = Env.perc(attackTime:attackTime, releaseTime:releaseTime, level:amp, curve:curve);
-		sig = sig * EnvGen.ar(env, doneAction: 2);
-		sig = sig * amp;
-
-		Out.ar(out, sig);
-
-	}).add;
-
-	myS;
-},
-
-
+libraryPaths: { arg self;
+	(self.libraryPath ++ self.name ++ ".*.sc").pathMatch;
+},*/
 
 
 )

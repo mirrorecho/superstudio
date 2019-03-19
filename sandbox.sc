@@ -3,6 +3,7 @@
 // ... update the following to local path of ss.sc
 ("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
 )
+
 // ---------------------------------------------------------
 (
 ~ss.initModule({
@@ -12,31 +13,102 @@
 	~ss.buf.loadLibrary("stringy");
 	~ss.buf.loadLibrary("piano");
 	~ss.buf.loadLibrary("fluty");
+	~ss.buf.loadLibrary("echo");
+	~ss.buf.loadLibrary("noisy");
 	~ss.buf.loadLibrary("me-voice");
-	~ss.sampler.makeDistortionSampler(
-		"rainpiano",
-		[
-			[~ss.buf['piano']['A0'], 27.5],
-			[~ss.buf['piano']['A1'], 55 ],
-			[~ss.buf['piano']['A2'], 110],
-			[~ss.buf['piano']['A3'], 220],
-			[~ss.buf['piano']['A4'], 440],
-			[~ss.buf['piano']['A5'], 880],
-			[~ss.buf['piano']['A6'], 1760],
-			[~ss.buf['piano']['A7'], 3520],
-			[~ss.buf['piano']['A7'], 3520],
-		],
-	);
+
+	~ss.synther.loadLibrary("synther.ringer");
 	~sandbox = ~ss.arrange.makeWork("sandbox");
 	~sandbox.clock.tempo = 166/60;
 });
 )
 // ---------------------------------------------------------
 
+~ss.sampler.makeSamplerSynth("sampledPianoDistorted", "distortion", "pianoI");
+
 (
 ~ss.openAll;
 ~ss.synther.openAllLibraries;
 )
+
+~ss.synther.makeSynth("yo", "sampledPianoDistorted");
+
+// ---------------------------------------------------------
+~ss.midi.synthName = "echoBreath";
+~ss.midi.synthName = "echoBreathing";
+~ss.midi.synthName = "meYo";
+~ss.midi.synthName = "rainPiano";
+~ss.midi.synthName = "sampleShamiI";
+~ss.midi.synthName = "sampleShamiII";
+~ss.midi.synthName = "ssSawBass";
+~ss.midi.synthName = "rainStringThin";
+~ss.midi.synthName = "rainFluteFlutter";
+~ss.midi.synthName = "rainFluteHum";
+~ss.midi.synthName = "room2";
+~ss.midi.postNote = true;
+// ---------------------------------------------------------
+
+~ss.synther.ringer.makeRinger("echoBreath", (
+	bufnum:~ss.buf['echo']['nine-breath-1'],
+	// overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
+	// overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
+	overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
+	releaseTime:2.0,
+	randStart:0.2,
+	curve:-12,
+	mix:0.4,
+	rateScale:(0.25)
+));
+~ss.synther.ringer.makeDroneRinger("echoBreathing", (
+	bufnum:~ss.buf['echo']['nine-breath-1'],
+	// overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
+	// overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
+	overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
+	// releaseTime:2.0,
+	// curve:-12,
+	mix:0.4,
+	rateScale:(0.25)
+));
+
+~ss.synther.ringer.makeDroneRinger("room2", (
+	bufnum:~ss.buf['noisy']['windy-day-bathroom-2'],
+	// overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
+	// overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
+	overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
+	// releaseTime:2.0,
+	// curve:-12,
+	attackTime:0.2,
+	mix:0.8,
+	rateScale:(0.5)
+));
+
+
+
+
+~ss.sampler.makeDroneSampler(
+	"rainStringThin",
+	[
+		[~ss.buf['stringy']['D#3-mod-thin-vibrato'], 311.127],
+		[~ss.buf['stringy']['D#3-mod-thin-vibrato'], 311.127],
+	],
+);
+~ss.sampler.makeDroneStereoFloatSampler(
+	"rainFluteFlutter",
+	[
+		[~ss.buf['fluty']['B4-flutter'], 493.883],
+		[~ss.buf['fluty']['B4-flutter'], 493.883],
+	],
+);
+~ss.sampler.makeDroneStereoFloatSampler(
+	"rainFluteHum",
+	[
+		[~ss.buf['fluty']['E4-B4-hum'], 329.628],
+		[~ss.buf['fluty']['E4-B4-hum'], 329.628],
+	],
+);
+
+)
+
 // ---------------------------------------------------------
 
 ~ss.buf.drone("stringy", "D#3-mod-thin-vibrato");
@@ -86,20 +158,10 @@ Set(a:4) | Set(a:4, b:6);
 
 (
 ~ss.buf.loadLibrary("echo");
-~ss.synther.loadLibrary("synther.ringer");
+
 ~ss.synther.ringer;
 
-~ss.synther.ringer.makeRinger("echoBreath", (
-	bufnum:~ss.buf['echo']['nine-breath-1'],
-	// overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
-	overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
-	// overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
-	releaseTime:2.0,
-	randStart:0.1,
-	curve:-8,
-	mix:0.4,
-	rateScale:(0.25)
-));
+
 
 ~ss.sampler.makeDistortionSampler(
 	"sampleShamiI",[
@@ -139,26 +201,9 @@ Set(a:4) | Set(a:4, b:6);
 		[~ss.buf['shamisen']['II-C#5'], 554.4],
 
 ]);
-~ss.sampler.makeDistortionSampler(
-	"meYo",
-	[
-		[~ss.buf['me-voice']['yo-E3'], 164.8],
-		[~ss.buf['me-voice']['yo-E3'], 164.8],
-		[~ss.buf['me-voice']['yo-Ab3'], 207.7],
-		[~ss.buf['me-voice']['yo-C4'], 261.6],
-		[~ss.buf['me-voice']['yo-C4'], 261.6],
-	],
-);
-)
+
 // ---------------------------------------------------------
-~ss.midi.synthName = "echoBreath";
-~ss.midi.synthName = "meYo";
-~ss.midi.synthName = "rainpiano";
-~ss.midi.synthName = "sampleShamiI";
-~ss.midi.synthName = "sampleShamiII";
-~ss.midi.synthName = "ssSawBass";
-~ss.midi.postNote = true;
-// ---------------------------------------------------------
+
 [1,2,3,4]*[10,100,1000,10000];
 
 (
