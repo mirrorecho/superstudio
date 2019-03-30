@@ -6,8 +6,11 @@ var ssPath = "".resolveRelative;
 var protoModule = (
 	name: "aModule",
 	title: "A super studio module",
-	path: ssPath,
-	initModule: { | self | }, // hook for function to initialize module
+
+	path: ssPath, // path for the module and/or child modules
+	prefix: "", // will auto prepend prefix when loading child modules by name
+
+	initModule: { arg self, callback={}; }, // hook for function to initialize module
 
 	// really only needed as a hook
 	getCopy: { arg self, eValues=();
@@ -72,18 +75,21 @@ var protoModule = (
 		self[name.asSymbol];
 	},
 
-	loadModule: { arg self, name, path, prefix, callback={};
-		var modulePath = (path ?? self.path);
-		var moduleFullName = (prefix ?? "") ++ name;
-		var moduleFilePath = modulePath ++ moduleFullName ++ ".sc";
-		var eModule = (moduleFilePath).load;
+	loadModule: { arg self, name, path, prefix;
+		var modulePath, moduleFullName, moduleFilePath, eModule;
+
+		modulePath = (path ?? self.path);
+		moduleFullName = (prefix ?? self.prefix) ++ name;
+		moduleFilePath = modulePath ++ moduleFullName ++ ".sc";
+		eModule = (moduleFilePath).load;
+
+		moduleFilePath.postln;
 		~ss.postPretty(["Loading module: '" ++ moduleFullName ++ "'"]);
-		eModule.path = path;
+		eModule.path = modulePath;
 		eModule.filePath = moduleFilePath;
 		self.makeModule(name, eModule);
-		s.sync;
+
 		("Module: '" ++ moduleFullName ++ "' success!").postln;
-		callback.value;
 		eModule;
 	},
 
@@ -92,9 +98,10 @@ var protoModule = (
 			s.sync;
 			modules.do { arg moduleName;
 				self.loadModule(moduleName, self.path, self.name ++ ".");
+				s.sync;
 			};
 			callback.value;
-		}.fork;
+		}.forkIfNeeded;
 	},
 
 
@@ -104,7 +111,7 @@ var protoModule = (
 	},
 
 	subPaths: { arg self;
-		(self.path ++ self.name ++ ".*.sc").pathMatch;
+		(self.path ++ self.prefix ++ "*.sc").pathMatch;
 	},
 
 	postMe: { arg self;
@@ -116,6 +123,8 @@ var protoModule = (
 ~ss = protoModule ++ (
 
 	name: "ss",
+
+	prefix: "ss.",
 
 	protoModule: protoModule,
 
@@ -154,10 +163,6 @@ var protoModule = (
 			// TO DO: load common synther libraries and common sampler libraries
 		});
 		CmdPeriod.run;
-	},
-
-	startup: { arg self, callback={};
-
 	},
 
 

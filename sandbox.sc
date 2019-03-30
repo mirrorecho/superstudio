@@ -24,7 +24,15 @@
 )
 // ---------------------------------------------------------
 
-~ss.sampler.makeSamplerSynth("sampledPianoDistorted", "distortion", "pianoI");
+~ss.sampler.makeSampler("sampledPianoDistorted", "protoEnv", "pianoI");
+~ss.sampler.makeSampler("sampledPiano", "basic", "pianoI");
+
+~ss.sampler.makeSampler("sampledFlute", "basic", "fluteI", (channels:1));
+
+
+
+a = ~ss.sampler.makers.loadModule("protoEnv");
+a;
 
 (
 ~ss.openAll;
@@ -38,8 +46,13 @@
 ~ss.midi.synthName = "echoBreathing";
 ~ss.midi.synthName = "meYo";
 ~ss.midi.synthName = "rainPiano";
+
+~ss.midi.synthName = "sampledPiano";
+~ss.midi.synthName = "sampledFlute";
+
 ~ss.midi.synthName = "sampleShamiI";
 ~ss.midi.synthName = "sampleShamiII";
+
 ~ss.midi.synthName = "ssSawBass";
 ~ss.midi.synthName = "rainStringThin";
 ~ss.midi.synthName = "rainFluteFlutter";
@@ -47,12 +60,24 @@
 ~ss.midi.synthName = "room2";
 ~ss.midi.postNote = true;
 // ---------------------------------------------------------
+(
+a = (yo:{arg self, foo, bar; foo.postln; bar.postln; "------".postln;});
 
+a.yo((foo:"A",bar:"B"));
+
+Function
+
+)
+
+
+
+
+(
 ~ss.synther.ringer.makeRinger("echoBreath", (
 	bufnum:~ss.buf['echo']['nine-breath-1'],
-	// overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
-	// overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
-	overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
+	//overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
+	overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
+	// overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
 	releaseTime:2.0,
 	randStart:0.2,
 	curve:-12,
