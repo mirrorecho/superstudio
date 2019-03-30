@@ -24,11 +24,14 @@
 )
 // ---------------------------------------------------------
 
-~ss.sampler.makeSampler("sampledPianoDistorted", "protoEnv", "pianoI");
+~ss.sampler.makeSampler("sampledMeYo", "basic", "meYo");
 ~ss.sampler.makeSampler("sampledPiano", "basic", "pianoI");
+~ss.sampler.makeSampler("sampledShamiI", "basic", "shamiI");
+~ss.sampler.makeSampler("sampledShamiII", "basic", "shamiII");
 
 ~ss.sampler.makeSampler("sampledFlute", "basic", "fluteI", (channels:1));
 
+~ss.sampler.makeSampler("sampledPianoDistorted", "protoEnv", "pianoI");
 
 
 a = ~ss.sampler.makers.loadModule("protoEnv");
@@ -47,11 +50,12 @@ a;
 ~ss.midi.synthName = "meYo";
 ~ss.midi.synthName = "rainPiano";
 
+~ss.midi.synthName = "sampledMeYo";
 ~ss.midi.synthName = "sampledPiano";
-~ss.midi.synthName = "sampledFlute";
+~ss.midi.synthName = "sampledShamiI";
+~ss.midi.synthName = "sampledShamiII";
 
-~ss.midi.synthName = "sampleShamiI";
-~ss.midi.synthName = "sampleShamiII";
+~ss.midi.synthName = "sampledFlute";
 
 ~ss.midi.synthName = "ssSawBass";
 ~ss.midi.synthName = "rainStringThin";

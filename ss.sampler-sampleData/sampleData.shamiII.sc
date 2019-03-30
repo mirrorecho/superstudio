@@ -1,7 +1,8 @@
 (
-
 // on II string tuned to F#
-~ss.sampler.sampleData.shamiI = [
+name: "shamiII",
+
+data:[
 		[~ss.buf['shamisen']['II-F#3'], 182.0], // = 185.0 flat
 		[~ss.buf['shamisen']['II-G3'], 196.0],
 		[~ss.buf['shamisen']['II-G#3'], 207.7],
@@ -16,6 +17,6 @@
 		[~ss.buf['shamisen']['II-B4'], 500.8], // = 493.8 flat
 		[~ss.buf['shamisen']['II-C#5'], 554.4],
 
-]);
+],
 
 )

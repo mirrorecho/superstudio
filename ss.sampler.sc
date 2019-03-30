@@ -18,8 +18,8 @@ initModule: { arg self;
 
 makeSampler: {
 	arg self, name, makerName, sampleDataName, samplerArgs=(channels:2);
-	var myMaker = self.makers[makerName.asSymbol] ? self.makers.loadModule(makerName);
-	var mySampleData = self.sampleData[sampleDataName.asSymbol] ? self.sampleData.loadModule(sampleDataName);
+	var myMaker = self.makers.loadModule(makerName);
+	var mySampleData = self.sampleData.loadModule(sampleDataName);
 
 	var myS = self.makeModule(name, (sampleData:mySampleData, maker:myMaker) ++ samplerArgs);
 

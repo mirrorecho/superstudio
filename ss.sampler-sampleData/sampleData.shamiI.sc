@@ -1,6 +1,9 @@
 (
 // on I string tuned to B
-~ss.sampler.sampleData.shamiI = [
+
+name: "shamiI",
+
+data: [
 	[~ss.buf['shamisen']['I-B2'], 123.5],
 	[~ss.buf['shamisen']['I-C3'], 130.8],
 	[~ss.buf['shamisen']['I-C#3'], 138.6],
@@ -18,6 +21,6 @@
 	[~ss.buf['shamisen']['I-F4'], 349.2],
 	[~ss.buf['shamisen']['I-F#4'], 370.0],
 	[~ss.buf['shamisen']['I-F#4'], 370.0],
-];
+],
 
 )

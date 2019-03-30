@@ -8,7 +8,7 @@ initModule: { | self |
 	MIDIIn.connectAll;
 
 	self.notes = Array.newClear(128);
-	self.synthName = "rainPiano";
+	self.synthName = "sampledPiano";
 	self.postNote = false;
 
 	MIDIdef.noteOn(\noteOn, {arg vel, midinote;
