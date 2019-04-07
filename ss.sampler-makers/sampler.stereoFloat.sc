@@ -1,19 +1,18 @@
 (
+//  basic sampler that takes mono signal and plays it at at slightly different rates over 2 channels
+title: "Stereo Float Sampler",
 
-~ss.sampler.makers.stereoFloat = {
+name: "stereoFloat",
 
-	arg self, name, sampleData;
-	var myS = ~ss.sampler.makeSamplerModule(name, sampleData);
+makeSynthDef: { arg self, name, sampler;
 
 	SynthDef(name, {
 		arg amp=1.0, start=0, freq=440, out=~ss.bus.master;
 		var mySample, buffer, buffer_freq, rate, panFreqRange=1.01, sig;
 
-		mySample = myS.getSample(freq);
+		mySample = sampler.getSample(freq);
 		buffer = mySample[0];
-		buffer_freq=mySample[1];
-
-
+		buffer_freq  =mySample[1];
 
 		rate = freq / buffer_freq;
 		sig = PlayBuf.ar(1,
@@ -28,8 +27,7 @@
 
 	}).add;
 
-	myS;
-};
+},
 
 
 )

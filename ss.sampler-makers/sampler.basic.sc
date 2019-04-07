@@ -8,13 +8,13 @@ makeSynthDef: { arg self, name, sampler;
 
 	SynthDef(name, {
 		arg amp=1.0, start=0, freq=440, out=~ss.bus.master;
-		var mySample, buffer, buffer_freq, rate, sig;
+		var mySample, buffer, bufferFreq, rate, sig;
 
 		mySample = sampler.getSample(freq);
 		buffer = mySample[0];
-		buffer_freq=mySample[1];
+		bufferFreq=mySample[1];
 
-		rate = freq / buffer_freq;
+		rate = freq / bufferFreq;
 		sig = PlayBuf.ar(sampler.channels,
 			bufnum:buffer,
 			rate:BufRateScale.kr(buffer)*rate,
@@ -26,7 +26,6 @@ makeSynthDef: { arg self, name, sampler;
 		Out.ar(out, sig);
 
 	}).add;
-
 },
 
 )

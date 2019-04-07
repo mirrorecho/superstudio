@@ -26,6 +26,10 @@
 
 ~ss.sampler.makeSampler("sampledMeYo", "basic", "meYo");
 ~ss.sampler.makeSampler("sampledPiano", "basic", "pianoI");
+~ss.sampler.makeSampler("sampledPianoAdsr", "adsr", "pianoI");
+~ss.sampler.makeSampler("sampledPianoPerc", "perc", "pianoI");
+~ss.sampler.makeSampler("sampledPianoDistortion", "distortionPerc", "pianoI");
+
 ~ss.sampler.makeSampler("sampledShamiI", "basic", "shamiI");
 ~ss.sampler.makeSampler("sampledShamiII", "basic", "shamiII");
 
@@ -42,7 +46,11 @@ a;
 ~ss.synther.openAllLibraries;
 )
 
-~ss.synther.makeSynth("yo", "sampledPianoDistorted");
+~ss.sampler.sampleData.openAll;
+~ss.sampler.makers.openAll;
+
+~ss.synther.makeSynth("yo", "sampledPianoDistortion", (distortion:0.9).asPairs);
+
 
 // ---------------------------------------------------------
 ~ss.midi.synthName = "echoBreath";
@@ -52,6 +60,9 @@ a;
 
 ~ss.midi.synthName = "sampledMeYo";
 ~ss.midi.synthName = "sampledPiano";
+~ss.midi.synthName = "sampledPianoAdsr";
+~ss.midi.synthName = "sampledPianoPerc";
+~ss.midi.synthName = "sampledPianoDistortion";
 ~ss.midi.synthName = "sampledShamiI";
 ~ss.midi.synthName = "sampledShamiII";
 
@@ -64,28 +75,20 @@ a;
 ~ss.midi.synthName = "room2";
 ~ss.midi.postNote = true;
 // ---------------------------------------------------------
-(
-a = (yo:{arg self, foo, bar; foo.postln; bar.postln; "------".postln;});
 
-a.yo((foo:"A",bar:"B"));
-
-Function
-
-)
-
-
-
+~ss.synther.makeSynth("echoBreath");
+~ss.buf['echo']['nine-breath-1'].play;
 
 (
 ~ss.synther.ringer.makeRinger("echoBreath", (
 	bufnum:~ss.buf['echo']['nine-breath-1'],
 	//overtoneAmps:[0.7, 0.5, 0.1, 0.5, 0.1, 0.4, 0.1, 0.3],
-	overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
-	// overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
+	// overtoneAmps:[0.1, 0.8, 0.1, 0.7, 0.1, 0.4, 0.1, 0.3]*0.5,
+	overtoneAmps:[0.5, 0.1, 0.4, 0.05, 0.4, 0.05, 0.3, 0.05]*0.5,
 	releaseTime:2.0,
 	randStart:0.2,
 	curve:-12,
-	mix:0.4,
+	mix:1,
 	rateScale:(0.25)
 ));
 ~ss.synther.ringer.makeDroneRinger("echoBreathing", (

@@ -1,20 +1,21 @@
 (
+//  basic sampler with percussive envelope
+title: "Percussive Sampler",
 
-~ss.sampler.makers.perc = {
+name: "perc",
 
-	arg self, name, sampleData;
-	var myS = ~ss.sampler.makeSamplerModule(name, sampleData);
+makeSynthDef: { arg self, name, sampler;
 
 	SynthDef(name, {
 		arg amp=1.0, start=0, freq=440, attackTime=0.01, releaseTime=2, curve= -4, out=~ss.bus.master;
 		var mySample, buffer, buffer_freq, rate, sig, env;
 
-		mySample = myS.getSample(freq);
+		mySample = sampler.getSample(freq);
 		buffer = mySample[0];
 		buffer_freq=mySample[1];
 
 		rate = freq / buffer_freq;
-		sig = PlayBuf.ar(2,
+		sig = PlayBuf.ar(sampler.channels,
 			bufnum:buffer,
 			rate:BufRateScale.kr(buffer)*rate,
 			startPos:BufSampleRate.kr(buffer) * start,
@@ -28,8 +29,6 @@
 		Out.ar(out, sig);
 
 	}).add;
-
-	myS;
-};
+},
 
 )
