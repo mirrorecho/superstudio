@@ -1,7 +1,7 @@
 (
-title: "Sampler with Distortion and Percussive Envelope",
+title: "No-frills Sampler with Percussive Envelope",
 
-name: "distortionPerc",
+name: "perc",
 
 makeSynthDef: { arg self, name, sampler;
 
@@ -10,10 +10,7 @@ makeSynthDef: { arg self, name, sampler;
 		attackTime=0.001, curve= -2,
 		out=~ss.bus.master;
 
-		var mySample, buffer, bufferFreq, rate, sig, sigDistort;
-
-		// distortion amount (usable values generally 0 to 1)
-		var distortion = \distortion.kr(sampler.distortion ? 0.4);
+		var mySample, buffer, bufferFreq, rate, sig;
 
 		var releaseTime = \releaseTime.kr(sampler.releaseTime);
 
@@ -30,21 +27,15 @@ makeSynthDef: { arg self, name, sampler;
 			doneAction: 2,
 		);
 
-		// the distorted signal
-		sigDistort = (sig * (3 + (distortion * 40))).distort * (1-(distortion/1.4)) * 0.4;
-
-		// mix between original sig and sigDistort
-		sig = (sig * (1-distortion)) + (sigDistort * distortion);
-
 		// the percussive envelope:
 		sig = sig * EnvGen.kr(
 			Env.perc(attackTime:attackTime, releaseTime:releaseTime, curve:curve),
 			levelScale:amp, doneAction: 2);
 
+
 		Out.ar(out, sig);
 
 	}).add;
-
-};
+},
 
 )

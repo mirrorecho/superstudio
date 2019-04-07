@@ -17,7 +17,9 @@ initModule: { arg self;
 },
 
 samplerDefaults: (
-	channels:2
+	channels: 2, // NOTE: event already has an attribute for numChannels, so naming this simply "channels" to avoid conflict
+	releaseTime: 2, // for samplers with ADSR or Perc Envelope
+	ampScale: 1, // or samplers that need across the board amp adjustment (e.g. drones)
 ),
 
 makeSampler: {
@@ -55,3 +57,4 @@ makeSampler: {
 
 
 )
+

@@ -1,8 +1,7 @@
 (
-// simple no-frills sampler that plays back buffer as-is
-title: "Basic Sampler",
+title: "No-frills Sampler that Plays Buffer at Scaled Rate Based on Freq",
 
-name: "basic",
+name: "play",
 
 makeSynthDef: { arg self, name, sampler;
 
@@ -15,10 +14,11 @@ makeSynthDef: { arg self, name, sampler;
 		bufferFreq=mySample[1];
 
 		rate = freq / bufferFreq;
-		sig = PlayBuf.ar(sampler.channels,
+		sig = PlayBuf.ar(
+			numChannels: sampler.channels,
 			bufnum:buffer,
 			rate:BufRateScale.kr(buffer)*rate,
-			startPos:BufSampleRate.kr(buffer) * start,
+			startPos:BufSampleRate.ir(buffer) * start,
 			doneAction:2,
 		);
 		sig = sig * amp;

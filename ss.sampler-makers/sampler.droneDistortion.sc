@@ -1,10 +1,10 @@
 (
-title: "Loops Through Buffer/Enevelope to Create a Drone (with ADSR envelope)",
+title: "Drone Sampler with Distortion",
 
 initModule: { arg self;
 },
 
-name: "drone",
+name: "droneDistortion",
 
 makeSynthDef: { arg self, name, sampler;
 
@@ -13,9 +13,12 @@ makeSynthDef: { arg self, name, sampler;
 		gate=1, attackTime=0.1, decayTime=0.2, sustainLevel=1, curve= -4,
 		out=~ss.bus.master;
 
-		var mySample, buffer, bufferFreq, rate, length, envs, envTimes, sigs, sig;
+		var mySample, buffer, bufferFreq, rate, length, envs, envTimes, sigs, sig, sigDistort;
 
 		var releaseTime = \releaseTime.kr(sampler.releaseTime);
+
+		// distortion amount (usable values generally 0 to 1)
+		var distortion = \distortion.kr(sampler.distortion ? 0.4);
 
 		mySample = sampler.getSample(freq);
 		buffer = mySample[0];
@@ -45,7 +48,16 @@ makeSynthDef: { arg self, name, sampler;
 		sigs = sigs * envs;
 
 		// the final mixed signal with adsr envelope
-		sig = Mix.ar(sigs) * EnvGen.kr(
+		sig = Mix.ar(sigs);
+
+		// the distorted signal
+		sigDistort = (sig * (3 + (distortion * 40))).distort * (1-(distortion/1.4)) * 0.4;
+
+		// mix between original sig and sigDistort
+		sig = (sig * (1-distortion)) + (sigDistort * distortion);
+
+		// the ADSR envelope
+		sig = sig * EnvGen.kr(
 			Env.adsr(attackTime, decayTime, sustainLevel, releaseTime, curve:curve),
 			gate:gate, levelScale:amp*sampler.ampScale, doneAction:2);
 

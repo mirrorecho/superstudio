@@ -20,15 +20,32 @@
 	~ss.synther.loadLibrary("synther.ringer");
 	~sandbox = ~ss.arrange.makeWork("sandbox");
 	~sandbox.clock.tempo = 166/60;
+
+	~ss.midi.synthName = "sandboxSampler";
+
 });
 )
 // ---------------------------------------------------------
+
+
+~ss.sampler.makeSampler("sandboxSampler", "play", "pianoI");
+
+~ss.sampler.makeSampler("sandboxSampler", "drone", "pianoI", (ampScale:6) );
+~ss.sampler.makeSampler("sandboxSampler", "droneDistortion", "pianoI", (ampScale:6, distortion:0.9) );
+~ss.sampler.makeSampler("sandboxSampler", "droneStereoFloat", "fluteI" );
+
+~ss.sampler.makeSampler("sandboxSampler", "distortionPerc", "pianoI", (distortion:0.9, releaseTime:0.5) );
+~ss.sampler.makeSampler("sandboxSampler", "distortionAdsr", "pianoI", (distortion:0.9) );
+~ss.sampler.makeSampler("sandboxSampler", "stereoFloat", "fluteI", (panFreqRange:1.1) );
+~ss.sampler.makeSampler("sandboxSampler", "stereoFloatAdsr", "fluteI", (releaseTime:1) );
+~ss.sampler.makeSampler("sandboxSampler", "stereoFloatPerc", "fluteI", (releaseTime:0.5) );
+
+
 
 ~ss.sampler.makeSampler("sampledMeYo", "basic", "meYo");
 ~ss.sampler.makeSampler("sampledPiano", "basic", "pianoI");
 ~ss.sampler.makeSampler("sampledPianoAdsr", "adsr", "pianoI");
 ~ss.sampler.makeSampler("sampledPianoPerc", "perc", "pianoI");
-~ss.sampler.makeSampler("sampledPianoDistortion", "distortionPerc", "pianoI");
 
 ~ss.sampler.makeSampler("sampledShamiI", "basic", "shamiI");
 ~ss.sampler.makeSampler("sampledShamiII", "basic", "shamiII");
@@ -49,14 +66,14 @@ a;
 ~ss.sampler.sampleData.openAll;
 ~ss.sampler.makers.openAll;
 
-~ss.synther.makeSynth("yo", "sampledPianoDistortion", (distortion:0.9).asPairs);
+~ss.synther.makeSynth("yo", "sampledPianoDistortion", (distortion:0.1, releaseTime:0.2).asPairs);
 
 
 // ---------------------------------------------------------
 ~ss.midi.synthName = "echoBreath";
 ~ss.midi.synthName = "echoBreathing";
 ~ss.midi.synthName = "meYo";
-~ss.midi.synthName = "rainPiano";
+~ss.midi.synthName = "sandboxSampler";
 
 ~ss.midi.synthName = "sampledMeYo";
 ~ss.midi.synthName = "sampledPiano";
