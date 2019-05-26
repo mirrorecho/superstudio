@@ -52,6 +52,10 @@ makeWork: {arg self, workName, eWorkInit=();
 		myW.getPar(list, (patternType:Pseq) ++ eValues);
 	};
 
+	myW.getRest = {arg myW, dur, eValues=();
+		myW.getModule(myW.protoP ++ eValues ++ (dur:dur, type:Pn(\rest,1)));
+	};
+
 	myW.getFadeIn = {arg myW, fadeP, eValues=(fadeTime:2);
 		myW.getModule(myW.protoP ++ (
 			patternType:PfadeIn,
@@ -93,6 +97,5 @@ makeWork: {arg self, workName, eWorkInit=();
 
 },
 )
-
 
 

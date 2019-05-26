@@ -12,6 +12,22 @@ var protoModule = (
 
 	initModule: { arg self, callback={}; }, // hook for function to initialize module
 
+	info: { arg self,
+		divider="=============================",
+		tab="";
+		var myKeys = self.keys - ~ss.protoModule.keys;
+
+		divider.postln;
+
+		(tab ++ self.name ++ ": " ++ self.title).postln;
+		tab = tab + "    ";
+
+		myKeys.asSortedList.do { arg name;
+			(tab ++ name).postln;
+		};
+		self.name;
+	},
+
 	// really only needed as a hook
 	getCopy: { arg self, eValues=();
 		self ++ eValues;
@@ -134,7 +150,7 @@ var protoModule = (
 
 	initialized: false,
 
-	modules: ["bus", "synther", "master", "buf", "midi", "arrange", "sampler"],
+	modules: ["bus", "synther", "master", "buf", "midi", "arrange", "sampler", "osc"],
 
 	open: { arg self, subPath;
 		(~ss.path ++ subPath).openOS;
@@ -158,6 +174,7 @@ var protoModule = (
 	initModule: { arg self, callback={};
 		CmdPeriod.removeAll;
 		CmdPeriod.add({
+			MIDIdef.freeAll;
 			Server.all.do(Buffer.freeAll);
 			self.load(self.modules, callback);
 			// TO DO: load common synther libraries and common sampler libraries

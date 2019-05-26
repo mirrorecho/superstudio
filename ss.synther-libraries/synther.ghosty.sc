@@ -18,7 +18,8 @@
 			var sig, env;
 			var freqMul = \freqMul.kr(myArgs.freqMul, 0.5);
 			var lf=LFNoise1.kr(freq:myArgs.moanRate);
-			var moanFreq = freq*(freqMul**lf);
+			var lagFreq = Lag.kr(freq, 0.2);
+			var moanFreq = lagFreq*(freqMul**lf);
 
 			sig = Pan2.ar(
 				in:myArgs.oscType.ar(freq:moanFreq, mul:amp*0.6),

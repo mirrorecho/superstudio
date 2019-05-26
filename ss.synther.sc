@@ -7,11 +7,11 @@ initModule: { | self |
 	self.loadLibrary("common");
 },
 
-makeSynth: { arg self, name, synthName, args=[];
+makeSynth: { arg self, name, synthDefName, args=[];
 	var mySynth = self[name.asSymbol];
 	if (mySynth != nil, { mySynth.free; });
-	if (synthName == nil, {synthName=name;});
-	self[name.asSymbol] = Synth(synthName, args);
+	if (synthDefName == nil, {synthDefName=name;});
+	self[name.asSymbol] = Synth(synthDefName, args);
 	self[name.asSymbol];
 },
 

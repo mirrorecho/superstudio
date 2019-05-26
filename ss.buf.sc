@@ -99,6 +99,15 @@ loadLibrary: {arg self, libraryName, files=[]; // if empty arry for files, then 
 	~ss.postPretty(postMsgs);
 },
 
+load: { arg self, libraries=[];
+	{
+		s.sync;
+		libraries.do { arg libraryName;
+			self.loadLibrary(libraryName);
+			s.sync;
+		};
+	}.forkIfNeeded;
+},
 
 playBuf: { arg self, libraryName, bufferName, args=[];
 	var bufnum = self[libraryName.asSymbol][bufferName.asSymbol];

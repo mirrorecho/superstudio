@@ -1,12 +1,16 @@
 (
 // RUN FIRST:
-// ... update the following to local path of ss.sc
-("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
+("".resolveRelative ++ "../superstudio/ss.sc").load;
 )
+
+// to explore:
+// - combo change pitch between mix and sliding ( split betwen varios harmonics)
+
 
 // ---------------------------------------------------------
 (
 ~ss.initModule({
+	// TO DO: make a settings NOT in source control for this
 	~ss.buf.libraryPath = "/Users/rwest/Echo/Sounds/Library/";
 	~ss.buf.loadLibrary("japan-cicadas");
 	~ss.buf.loadLibrary("shamisen");
@@ -27,6 +31,7 @@
 )
 // ---------------------------------------------------------
 
+~yo.name;
 
 ~ss.sampler.makeSampler("sandboxSampler", "play", "pianoI");
 
@@ -44,7 +49,7 @@
 
 ~ss.sampler.makeSampler("sampledMeYo", "basic", "meYo");
 ~ss.sampler.makeSampler("sampledPiano", "basic", "pianoI");
-~ss.sampler.makeSampler("sampledPianoAdsr", "adsr", "pianoI");
+~ss.sampler.makeSampler("sampledPianoAdsr", "playAdsr", "pianoI");
 ~ss.sampler.makeSampler("sampledPianoPerc", "perc", "pianoI");
 
 ~ss.sampler.makeSampler("sampledShamiI", "basic", "shamiI");
@@ -68,7 +73,6 @@ a;
 
 ~ss.synther.makeSynth("yo", "sampledPianoDistortion", (distortion:0.1, releaseTime:0.2).asPairs);
 
-~ss.synther.loadLibrary("synther.ghosty");
 
 
 // ---------------------------------------------------------
@@ -100,12 +104,67 @@ a;
 ~ss.synther.makeSynth("echoBreath");
 ~ss.buf['echo']['nine-breath-1'].play;
 
+// ---------------------------------------------------------
 
+/*
+MACHINES LIVE PERFORMANCE IDEAS:
+
+What controls input?
+- Phone app!!!! (this is most interesting)
+- MIDI keyboard?
+- MICI controller?
+- mics?
+- fancy contraption / sensor
+
+How can input be expressive?
+- pure theater?
+- shaking phone
+
+How to integrate performance?
+
+Title
+- "Japan in my pocket"
+- "The noodle is cooked"
+- "Where are my toes?!"
+- "I was raised by a happy fungus, sometime in July"
+- "Fear of gastronomy"
+
+
+*/
+
+~ss.bus.makeControlBus("accelX");
+
+~ss.osc.addBusListener("accelX1", (path:"/accelerometer/raw/x", busName:"accelX", msgSelect:1));
+
+(
+~ss.osc.addFuncListener("accelX2", (path:"/accelerometer/raw/x", msgSelect:1, func:{
+	arg msg;
+	var freq = msg[1].linexp(-20,20,220,880);
+	freq.postln;
+	~ss.synther.ghostyMoan.set(\freq, freq);
+}));
+)
+
+
+~ss.synther.loadLibrary("synther.ghosty");
+~ss.synther.makeSynth("ghostyMoan");
+~ss.synther.ghostyMoan.free;
+
+Synth
+
+~ss.osc.removeListener("accelX");
+~ss.osc.removeListener("accelX2");
+
+~ss.bus.accelX;
+
+~ss.bus.accelX.getSynchronous;
+
+NamedControl
 
 (
 ~ghosty = ~ss.synther.makeModule("fish", (
 
-	eDefaultArgs: (
+	eMoanDefaultArgs: (
 		oscType:SinOsc,
 		freqMul:1 + (1/8),
 		moanRate:4,
@@ -135,14 +194,15 @@ a;
 	},
 ));
 
-~ghosty.makeMoan("ghostyMoan");
-~ghosty.makeMoan("ghostyBigMoan", (oscType:Saw, freqMul:2, moanRate:8, panRate:1, panMul:0.6));
+// ~ghosty.makeMoan("ghostyMoan");
+// ~ghosty.makeMoan("ghostyBigMoan", (oscType:Saw, freqMul:2, moanRate:8, panRate:1, panMul:0.6));
 
 )
+~ghosty.makeMoan("ghostyMoan");
+// ~ghosty.makeMoan("ghostyBigMoan", (oscType:Saw, freqMul:2, moanRate:8, panRate:1, panMul:0.6));
+~ghosty.makeMoan("ghostyMoan");
 
-
-
-
+Synth
 
 (
 ~ss.synther.ringer.makeRinger("echoBreath", (
@@ -217,7 +277,8 @@ Env(levels: [0.5, 0.25, 0, 0.25, 0.5], times: b, curve: [6,-6,6,-6]).circle.plot
 
 
 
-("/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
+(c   "/Users/rwest/Code/mirrorecho/superstudio/ss.sc").load;
+
 (
 ~ss.makeModule("aTest");
 ~ss.makeModule("bTest");
@@ -254,54 +315,8 @@ Set(a:4) | Set(a:4, b:6);
 
 
 (
-~ss.buf.loadLibrary("echo");
-
-~ss.synther.ringer;
-
-
-
-~ss.sampler.makeDistortionSampler(
-	"sampleShamiI",[
-		[~ss.buf['shamisen']['I-B2'], 123.5],
-		[~ss.buf['shamisen']['I-C3'], 130.8],
-		[~ss.buf['shamisen']['I-C#3'], 138.6],
-		[~ss.buf['shamisen']['I-D3'], 146.8],
-		[~ss.buf['shamisen']['I-E3'], 164.8],
-		[~ss.buf['shamisen']['I-F3'], 174.6],
-		[~ss.buf['shamisen']['I-F#3'], 185.0],
-		[~ss.buf['shamisen']['I-G3'], 196.0],
-		[~ss.buf['shamisen']['I-G#3'], 207.7],
-		[~ss.buf['shamisen']['I-A3'], 220.0],
-		[~ss.buf['shamisen']['I-B3'], 246.9],
-		[~ss.buf['shamisen']['I-C4'], 261.6],
-		[~ss.buf['shamisen']['I-C#4'], 277.2],
-		[~ss.buf['shamisen']['I-E4'], 329.6],
-		[~ss.buf['shamisen']['I-F4'], 349.2],
-		[~ss.buf['shamisen']['I-F#4'], 370.0],
-		[~ss.buf['shamisen']['I-F#4'], 370.0],
-]);
-
-~ss.sampler.makeDistortionSampler(
-	"sampleShamiII",[
-		[~ss.buf['shamisen']['II-F#3'], 182.0], // = 185.0 flat
-		[~ss.buf['shamisen']['II-G3'], 196.0],
-		[~ss.buf['shamisen']['II-G#3'], 207.7],
-		[~ss.buf['shamisen']['II-A3'], 220.0],
-		[~ss.buf['shamisen']['II-B3'], 247.9],
-		[~ss.buf['shamisen']['II-C#4'], 277.2],
-		[~ss.buf['shamisen']['II-D4'], 293.7],
-		[~ss.buf['shamisen']['II-E4'], 329.6],
-		[~ss.buf['shamisen']['II-F#4'], 369.0],
-		[~ss.buf['shamisen']['II-G4'], 392.0],
-		[~ss.buf['shamisen']['II-G#4'], 420.0], // = 415.3 sharp
-		[~ss.buf['shamisen']['II-B4'], 500.8], // = 493.8 flat
-		[~ss.buf['shamisen']['II-C#5'], 554.4],
-
-]);
 
 // ---------------------------------------------------------
-
-[1,2,3,4]*[10,100,1000,10000];
 
 (
 
