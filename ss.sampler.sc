@@ -21,7 +21,7 @@ initModule: { arg self;
 samplerDefaults: (
 	channels: 2, // NOTE: event already has an attribute for numChannels, so naming this simply "channels" to avoid conflict
 	releaseTime: 2, // for samplers with ADSR or Perc Envelope
-	ampScale: 1, // or samplers that need across the board amp adjustment (e.g. drones)
+	ampScale: 1, // for samplers that need across-the-board amp adjustment (e.g. drones)
 ),
 
 makeSampler: {
@@ -32,7 +32,6 @@ makeSampler: {
 	var myS = self.makeModule(name, (sampleData:mySampleData, maker:myMaker) ++ self.samplerDefaults ++ samplerArgs);
 
 	// TO DO...  could use pairsDo to simplify this...
-
 	// adds the cutover frequencies as third element to each array, if doesn't already exist (except for the last array);
 	(mySampleData.data.size).do{ |i|
 		var mySample = mySampleData.data[i];
@@ -43,7 +42,6 @@ makeSampler: {
 	};
 
 	// TO DO? ...could use Select to simply the below?
-
 	// gets the appropriate sample data element based on frequency
 	myS.getSample = {arg myS, freq;
 		var mySample = myS.sampleData.data[0] * (freq < myS.sampleData.data[0][2]);
